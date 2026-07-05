@@ -1,0 +1,180 @@
+  datasource db {
+    provider = "postgresql"
+  }
+
+  generator client {
+    provider = "prisma-client-js"
+  }
+
+  // --- ENUMS ---
+  enum Role {
+    PARENT
+    DOCTOR
+    ADMIN
+    SELLER
+  }
+
+  enum ZScoreStatus {
+    NORMAL
+    RISK
+    STUNTING
+  }
+
+  enum ConsultationStatus {
+    PENDING
+    PAID
+    ONGOING
+    COMPLETED
+  }
+
+  enum OrderStatus {
+    PENDING
+    PROCESSING
+    DELIVERING
+    COMPLETED
+    CANCELLED
+  }
+
+  // --- MODELS ---
+
+  model User {
+    id           String         @id @default(uuid())
+    name         String
+    email        String         @unique
+    password     String
+    role         Role           @default(PARENT)
+    phoneNumber  String?
+    address      String?
+    isVerified   Boolean        @default(false) // Untuk verifikasi dokter & seller oleh admin
+    children     Child[]
+    orders       Order[]
+    consultations Consultation[]
+    doctorProfile Doctor?        // Relasi ke profil dokter jika role = DOCTOR
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+
+    @@map("users")
+  }
+
+  model Child {
+    id          String      @id @default(uuid())
+    userId      String
+    user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    name        String
+    gender      String      // 'L' atau 'P'
+    birthDate   DateTime
+    birthWeight Float       // dalam kg
+    birthHeight Float       // dalam cm
+    growthLogs  GrowthLog[]
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+
+    @@map("children")
+  }
+
+  model GrowthLog {
+    id              String       @id @default(uuid())
+    childId         String
+    child           Child        @relation(fields: [childId], references: [id], onDelete: Cascade)
+    measurementDate DateTime     @default(now())
+    weight          Float
+    height          Float
+    headCircumference Float?      // opsional, dalam cm
+    zScoreStatus    ZScoreStatus @default(NORMAL)
+    note            String?      // catatan tambahan
+    createdAt       DateTime     @default(now())
+    updatedAt       DateTime     @updatedAt
+
+    @@map("growth_logs")
+  }
+
+  model Doctor {
+    id              String         @id @default(uuid())
+    // Relasi opsional ke User — jika dokter mendaftar lewat aplikasi
+    userId          String?        @unique
+    user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+    name            String
+    specialization  String
+    pricePerSession Decimal        @db.Decimal(10, 2)
+    // isActive sekarang bergantung pada isVerified di User,
+    // tapi tetap ada sebagai kontrol manual oleh admin
+    isActive        Boolean        @default(true)
+    bio             String?        // Tentang dokter (opsional)
+    photoUrl        String?        // Foto profil dokter (opsional)
+    consultations   Consultation[]
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+
+    @@map("doctors")
+  }
+
+  model Consultation {
+    id          String             @id @default(uuid())
+    userId      String
+    user        User               @relation(fields: [userId], references: [id])
+    doctorId    String
+    doctor      Doctor             @relation(fields: [doctorId], references: [id])
+    scheduledAt DateTime
+    status      ConsultationStatus @default(PENDING)
+    createdAt   DateTime           @default(now())
+    updatedAt   DateTime           @updatedAt
+    messages    ChatMessage[]
+
+    @@map("consultations")
+  }
+
+  model ChatMessage {
+    id             String        @id @default(uuid())
+    consultationId String
+    consultation   Consultation  @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+    senderId       String?
+    senderRole     Role
+    text           String
+    isRead         Boolean       @default(false)
+    createdAt      DateTime      @default(now())
+
+    @@map("chat_messages")
+  }
+
+  model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  category    String
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int
+  imageUrl    String?
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingAddress String?
+  status          OrderStatus @default(PENDING)
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  quantity        Int
+  priceAtPurchase Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("order_items")
+}
