@@ -4,7 +4,7 @@ export interface User {
   email: string;
   phoneNumber?: string;
   address?: string;
-  role: 'ADMIN' | 'PARENT';
+  role: 'ADMIN' | 'PARENT' | 'DOCTOR' | 'SELLER';
   createdAt: string;
 }
 
@@ -14,6 +14,7 @@ export interface Child {
   name: string;
   gender: 'L' | 'P';
   birthDate: string;
+  imageUrl?: string;
   birthWeight: number;
   birthHeight: number;
   createdAt: string;

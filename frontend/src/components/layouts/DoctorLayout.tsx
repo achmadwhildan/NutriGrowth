@@ -1,8 +1,30 @@
-import React, { ReactNode } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import React, { ReactNode, useState, useContext, useRef, useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 
 const DoctorNavbar: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const auth = useContext(AuthContext);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLogout = () => {
+        if (auth) {
+            auth.logout();
+            navigate('/login');
+        }
+    };
     
     const getLinkClass = (path: string) => {
         return location.pathname === path 
@@ -26,8 +48,27 @@ const DoctorNavbar: React.FC = () => {
                     <button className="p-2 text-gray-400 hover:text-nutri-primary transition relative">
                         🔔 <span className="absolute top-2 right-2 w-2 h-2 bg-nutri-secondary rounded-full"></span>
                     </button>
-                    <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 flex items-center justify-center">
-                        👨‍⚕️
+                    <div className="relative" ref={dropdownRef}>
+                        <button 
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 flex items-center justify-center hover:ring-2 hover:ring-nutri-primary/50 transition focus:outline-none"
+                        >
+                            👨‍⚕️
+                        </button>
+                        {isDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-fade-in origin-top-right">
+                                <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                                    <p className="text-xs font-semibold text-gray-800 truncate">{auth?.user?.name || 'Doctor'}</p>
+                                    <p className="text-[10px] text-gray-500 truncate">{auth?.user?.email}</p>
+                                </div>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition"
+                                >
+                                    Keluar
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -37,28 +37,31 @@ const App: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/setup-profile" element={<SetupChildProfile />} />
 
-        {/* Doctor Routes (Belum dilindungi khusus role dokter agar mudah dites) */}
-        <Route path="/doctor" element={<DoctorLayout />}>
-          <Route index element={<DoctorDashboard />} />
-          <Route path="schedule" element={<DoctorSchedule />} />
-          <Route path="consult/:id" element={<DoctorConsultRoom />} />
+        <Route element={<ProtectedRoute allowedRoles={['DOCTOR']} />}>
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route index element={<DoctorDashboard />} />
+            <Route path="schedule" element={<DoctorSchedule />} />
+            <Route path="consult/:id" element={<DoctorConsultRoom />} />
+          </Route>
         </Route>
 
-        {/* Seller Routes (Belum dilindungi khusus role seller agar mudah dites) */}
-        <Route path="/seller" element={<SellerLayout />}>
-          <Route index element={<SellerDashboard />} />
-          <Route path="products" element={<SellerProducts />} />
-          <Route path="orders" element={<SellerOrders />} />
+        <Route element={<ProtectedRoute allowedRoles={['SELLER']} />}>
+          <Route path="/seller" element={<SellerLayout />}>
+            <Route index element={<SellerDashboard />} />
+            <Route path="products" element={<SellerProducts />} />
+            <Route path="orders" element={<SellerOrders />} />
+          </Route>
         </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="verify-doctors" element={<DoctorVerification />} />
-          <Route path="verify-sellers" element={<SellerVerification />} />
+        <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="verify-doctors" element={<DoctorVerification />} />
+            <Route path="verify-sellers" element={<SellerVerification />} />
+          </Route>
         </Route>
 
-        <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
           <Route element={<MainLayout />}>
             <Route path="/parent-dashboard" element={<ParentDashboard />} />
             <Route path="/tracker" element={<Tracker />} />

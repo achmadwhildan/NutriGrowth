@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 interface StatItem {
@@ -105,7 +106,7 @@ const AdminDashboard: React.FC = () => {
                                         <p className="text-xs text-gray-500">{pendingDoctors} permohonan menunggu</p>
                                     </div>
                                 </div>
-                                <button className="text-sm font-semibold text-orange-600 hover:text-orange-700">Lihat</button>
+                                <Link to="/admin/verify-doctors" className="text-sm font-semibold text-orange-600 hover:text-orange-700">Lihat</Link>
                             </li>
                             <li className="flex justify-between items-center p-4 bg-blue-50 rounded-xl border border-blue-100">
                                 <div className="flex items-center gap-3">
@@ -115,7 +116,7 @@ const AdminDashboard: React.FC = () => {
                                         <p className="text-xs text-gray-500">{pendingSellers} permohonan menunggu</p>
                                     </div>
                                 </div>
-                                <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">Lihat</button>
+                                <Link to="/admin/verify-sellers" className="text-sm font-semibold text-blue-600 hover:text-blue-700">Lihat</Link>
                             </li>
                         </ul>
                     )}

@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, HtmlHTMLAttributes, useEffect } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import api from "../../services/api";
 import { Child } from '../../types';
 
@@ -10,6 +10,7 @@ const Tracker: React.FC = () => {
 
     const [children, setChildren] = useState<Child[]>([]);
     const [activeChildId, setActiveChildId] = useState<string | null>(null);
+    const [growthHistory, setGrowthHistory] = useState<any[]>([]);
 
     // state aktif untuk menu sidebar tracker kecil (default: timbang)
     const [activeSubMenu, setActiveSubMenu] = useState<'timbang' | 'switcher' | 'riwayat'>('timbang');
@@ -32,10 +33,21 @@ const Tracker: React.FC = () => {
             });
 
             alert(`Berhasil! Status Pertumbuhan: ${response.data.data?.zScoreStatus || response.data.data?.status || 'NORMAL'} 🎉`);
+            fetchHistory();
         } catch (error: any) {
             alert(error.response?.data?.message || 'Gagal menghitung data gizi si Kecil.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchHistory = async () => {
+        if (!activeChildId) return;
+        try {
+            const res = await api.get(`/growth/history/${activeChildId}`);
+            setGrowthHistory(res.data.data || []);
+        } catch (err) {
+            console.error('Gagal mengambil riwayat:', err);
         }
     };
 
@@ -53,6 +65,11 @@ const Tracker: React.FC = () => {
 
         loadChildren();
     }, []);
+
+    useEffect(() => {
+        if (activeChildId) fetchHistory();
+    }, [activeChildId]);
+
     return (
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row gap-6 items-start font-sans">
 
@@ -62,7 +79,7 @@ const Tracker: React.FC = () => {
                     {/* Info Ringkas Anak Aktif */}
                     <div className="bg-nutri-secondary/40 rounded-2xl p-4 flex items-center gap-3 border border-nutri-secondary/20">
                         <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex-shrink-0">
-                            <img src={children[0]?.imageUrl || 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=100'} alt={children[0]?.name || 'Anak'} className="w-full h-full object-cover" />
+                            <img src={children.find(c => c.id === activeChildId)?.imageUrl || 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=100'} alt="Anak" className="w-full h-full object-cover" />
                         </div>
                         <div>
                             <h4 className="text-sm font-bold text-nutri-primaryDark">{children.find(c => c.id === activeChildId)?.name || 'Pilih Anak'}</h4>
@@ -89,13 +106,13 @@ const Tracker: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setActiveSubMenu('switcher')}
-                            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'switcher' ? 'bg-transparent text-gray-600' : 'hover:bg-gray-50'}`}
+                            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'switcher' ? 'bg-nutri-secondary text-nutri-primaryDark' : 'hover:bg-gray-50'}`}
                         >
                             <span>🔄</span> Profile Switcher
                         </button>
                         <button
                             onClick={() => setActiveSubMenu('riwayat')}
-                            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'riwayat' ? 'bg-transparent text-gray-600' : 'hover:bg-gray-50'}`}
+                            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'riwayat' ? 'bg-nutri-secondary text-nutri-primaryDark' : 'hover:bg-gray-50'}`}
                         >
                             <span>📜</span> Riwayat
                         </button>
@@ -114,69 +131,60 @@ const Tracker: React.FC = () => {
             </aside>
 
             {/* ================= SISI KANAN: KONTEN SELECTION INPUT DATA ================= */}
-            <section className="flex-1 bg-white rounded-3xl border border-gray-100 p-6 md:p-10 shadow-sm min-h-[500px] w-full flex flex-col justify-center">
+            <section className="flex-1 bg-white rounded-3xl border border-gray-100 p-6 md:p-10 shadow-sm min-h-[500px] w-full">
 
-                {/* Stepper Indikator Atas */}
-                <div className="flex justify-center items-center gap-2 mb-8">
-                    <span className="w-8 h-1.5 rounded-full bg-nutri-primaryDark"></span>
-                    <span className="w-8 h-1.5 rounded-full bg-gray-200"></span>
-                    <span className="w-8 h-1.5 rounded-full bg-gray-200"></span>
-                </div>
-
-                {/* Judul Halaman */}
-                <div className="text-center space-y-1 mb-8">
-                    <h2 className="text-2xl font-extrabold text-nutri-primaryDark">Timbang Sekarang</h2>
-                    <p className="text-xs text-gray-400">Mari pantau tumbuh kembang si kecil hari ini.</p>
-                </div>
-
-                {/* Form & Ilustrasi Container Split */}
-                <div className="grid md:grid-cols-2 gap-10 items-center max-w-3xl mx-auto w-full">
-
-                    {/* Sisi Form Input */}
-                    <form onSubmit={handleCalculateGizi} className="space-y-5 w-full">
-                        <div className="relative">
-                            <input
-                                type="number" step="0.1" required placeholder="Berat Badan"
-                                value={weight} onChange={(e) => setWeight(e.target.value)}
-                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-nutri-primary rounded-xl text-sm font-medium focus:outline-none transition pr-12"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">kg</span>
+                {activeSubMenu === 'timbang' && (
+                    <>
+                        <div className="text-center space-y-1 mb-8">
+                            <h2 className="text-2xl font-extrabold text-nutri-primaryDark">Timbang Sekarang</h2>
+                            <p className="text-xs text-gray-400">Mari pantau tumbuh kembang si kecil hari ini.</p>
                         </div>
-
-                        <div className="relative">
-                            <input
-                                type="number" step="0.1" required placeholder="Tinggi Badan"
-                                value={height} onChange={(e) => setHeight(e.target.value)}
-                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-nutri-primary rounded-xl text-sm font-medium focus:outline-none transition pr-12"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">cm</span>
+                        <div className="grid md:grid-cols-2 gap-10 items-center max-w-3xl mx-auto w-full">
+                            <form onSubmit={handleCalculateGizi} className="space-y-5 w-full">
+                                <div className="relative">
+                                    <input
+                                        type="number" step="0.1" required placeholder="Berat Badan"
+                                        value={weight} onChange={(e) => setWeight(e.target.value)}
+                                        className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-nutri-primary rounded-xl text-sm font-medium focus:outline-none transition pr-12"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">kg</span>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type="number" step="0.1" required placeholder="Tinggi Badan"
+                                        value={height} onChange={(e) => setHeight(e.target.value)}
+                                        className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-nutri-primary rounded-xl text-sm font-medium focus:outline-none transition pr-12"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">cm</span>
+                                </div>
+                                <button type="submit" disabled={loading} className="w-full py-3.5 bg-amber-800 text-white font-bold rounded-xl text-sm shadow-md hover:bg-opacity-95 transition">
+                                    {loading ? 'Menghitung...' : 'Cek Hasil'}
+                                </button>
+                            </form>
+                            <div className="flex justify-center w-full">
+                                <div className="w-64 h-64 bg-nutri-primary/10 rounded-full flex items-center justify-center p-6 relative overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=300" className="w-full h-full object-cover rounded-2xl shadow-md mix-blend-multiply opacity-85" alt="Scale" />
+                                </div>
+                            </div>
                         </div>
+                    </>
+                )}
 
-                        <button
-                            type="submit" disabled={loading}
-                            className="w-full py-3.5 bg-amber-800 text-white font-bold rounded-xl text-sm shadow-md hover:bg-opacity-95 active:scale-[0.99] transition"
-                        >
-                            {loading ? 'Menghitung...' : 'Cek Hasil'}
-                        </button>
-                    </form>
-
-                    {/* Sisi Ilustrasi Timbangan Visual */}
-                    <div className="flex justify-center w-full">
-                        <div className="w-64 h-64 bg-nutri-primary/10 rounded-full flex items-center justify-center p-6 relative overflow-hidden">
-                            {/* Gambar Timbangan Bulat dari link SVG/Unsplash */}
-                            <img
-                                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=300"
-                                className="w-full h-full object-cover rounded-2xl shadow-md mix-blend-multiply opacity-85"
-                                alt="Scale Illustration"
-                            />
-                            <div className="absolute inset-0 border-[6px] border-white/60 rounded-full pointer-events-none"></div>
-                        </div>
+                {activeSubMenu === 'riwayat' && (
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-bold text-nutri-primaryDark mb-4">Riwayat Pertumbuhan</h2>
+                        {growthHistory.length > 0 ? growthHistory.map((item: any, i: number) => (
+                            <div key={i} className="p-4 border rounded-xl flex justify-between items-center text-sm">
+                                <div>
+                                    <p className="font-bold">{new Date(item.createdAt).toLocaleDateString()}</p>
+                                    <p className="text-gray-500">{item.weight} kg, {item.height} cm</p>
+                                </div>
+                                <span className="font-semibold text-nutri-primary">{item.zScoreStatus || 'Normal'}</span>
+                            </div>
+                        )) : <p className="text-sm text-gray-400">Belum ada riwayat data.</p>}
                     </div>
-
-                </div>
-
+                )}
             </section>
-
         </div>
     );
 };

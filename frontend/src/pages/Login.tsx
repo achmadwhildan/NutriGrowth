@@ -1,7 +1,22 @@
-import React, { useState, FormEvent, useContext } from 'react';
+import React, { useState, FormEvent, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import { User } from '../types';
+
+const getDashboardPath = (role: User['role']) => {
+    switch (role) {
+        case 'ADMIN':
+            return '/admin';
+        case 'DOCTOR':
+            return '/doctor';
+        case 'SELLER':
+            return '/seller';
+        case 'PARENT':
+        default:
+            return '/parent-dashboard';
+    }
+};
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState<string>('');
@@ -10,6 +25,12 @@ const Login: React.FC = () => {
 
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (auth?.token && auth.user) {
+            navigate(getDashboardPath(auth.user.role), { replace: true });
+        }
+    }, [auth?.token, auth?.user, navigate]);
 
     const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -20,11 +41,8 @@ const Login: React.FC = () => {
             const response = await api.post('/auth/login', { email, password });
 
             if (response.data.token && auth) {
-                // simpan ke state global context 
                 auth.login(response.data.token, response.data.user);
-
-                // arahkan user masuk ke dalam dashboard utama jika sukses
-                navigate('/parent-dashboard');
+                navigate(getDashboardPath(response.data.user.role));
                 alert(`Selamat datang kembali, ${response.data.user.name}!`);
             }
         } catch (err: any) {

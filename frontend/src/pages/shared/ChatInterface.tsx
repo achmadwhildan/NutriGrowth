@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -58,16 +58,15 @@ const DUMMY_MESSAGES: Record<string, Message[]> = {
 
 const ChatInterface: React.FC = () => {
     const { sessionId } = useParams<{ sessionId?: string }>();
-    const navigate = useNavigate();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     
     const [sessions, setSessions] = useState<ChatSession[]>(DUMMY_SESSIONS);
     const [activeSessionId, setActiveSessionId] = useState<string>(sessionId || DUMMY_SESSIONS[0]?.id);
     const [messagesBySession, setMessagesBySession] = useState<Record<string, Message[]>>(DUMMY_MESSAGES);
-    const [loadingSessions, setLoadingSessions] = useState<boolean>(false);
-    const [loadingMessages, setLoadingMessages] = useState<boolean>(false);
+    const [, setLoadingSessions] = useState<boolean>(false);
+    const [, setLoadingMessages] = useState<boolean>(false);
     const [newMessage, setNewMessage] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
+    const [isTyping] = useState(false);
     const auth = useContext(AuthContext);
     const currentUserId = auth?.user?.id;
 

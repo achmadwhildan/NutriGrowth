@@ -1,57 +1,36 @@
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { Child } from '../../types';
 
+interface Product {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    imageUrl?: string;
+    category: string;
+}
+
 const ParentDashboard: React.FC = () => {
     // state anak aktif dan daftar anak
-    const [children, setChildren] = useState<Child[]>([]);
+    const [, setChildren] = useState<Child[]>([]);
     const [activeChild, setActiveChild] = useState<Child | null>(null);
     const [insight, setInsight] = useState<string>('');
+    const [products, setProducts] = useState<Product[]>([]);
 
     // State untuk mengontrol buka/tutup modal popup
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [heightInput, setHeightInput] = useState('');
+    const [weightInput, setWeightInput] = useState('');
 
-    // state form input timbang anak 
-    const [weight, setWeight] = useState<string>('');
-    const [height, setHeight] = useState<string>('');
-    const [headCircumference, setHeadCircumference] = useState<string>('');
-    const [note, setNote] = useState<string>('');
-
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const handleWeightSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            if (!activeChild) {
-                alert('Pilih profil anak terlebih dahulu.');
-                return;
-            }
-
-            // Panggil endpoint growth add
-            await api.post('/growth/add', {
-                childId: activeChild.id,
-                weight: parseFloat(weight),
-                height: parseFloat(height),
-                headCircumference: headCircumference ? parseFloat(headCircumference) : undefined,
-                note
-            });
-
-            alert("Data tumbuh kembang berhasil dicatat! 🎉");
-            setIsModalOpen(false);
-
-            // Kosongkan form kembali
-            setWeight('');
-            setHeight('');
-            setHeadCircumference('');
-            setNote('');
-        } catch (error: any) {
-            alert(error.response?.data?.message || "Gagal mencatat data gizi.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    // State untuk modal Buat Profil Anak
+    const [isAddChildModalOpen, setIsAddChildModalOpen] = useState<boolean>(false);
+    const [childName, setChildName] = useState('');
+    const [childGender, setChildGender] = useState('L');
+    const [childBirthDate, setChildBirthDate] = useState('');
+    const [childBirthWeight, setChildBirthWeight] = useState('');
+    const [childBirthHeight, setChildBirthHeight] = useState('');
 
     useEffect(() => {
         const loadChildren = async () => {
@@ -69,6 +48,11 @@ const ParentDashboard: React.FC = () => {
         };
 
         loadChildren();
+
+        // Fetch produk rekomendasi
+        api.get('/shop/products').then(res => {
+            setProducts(res.data.data || []);
+        }).catch(err => console.error('Gagal mengambil produk:', err));
     }, []);
 
     const formatAge = (birthDate?: string) => {
@@ -92,6 +76,34 @@ const ParentDashboard: React.FC = () => {
         insight: insight || ''
     };
 
+    const handleSaveGrowth = async () => {
+        if (!activeChild || !activeChild.id) {
+            alert('Tidak ada data profil anak. Silakan buat profil anak terlebih dahulu.');
+            return;
+        }
+        if (!heightInput || !weightInput) {
+            alert('Tinggi dan berat badan wajib diisi!');
+            return;
+        }
+
+        try {
+            await api.post('/growth/add', {
+                childId: activeChild.id,
+                height: parseFloat(heightInput),
+                weight: parseFloat(weightInput),
+            });
+            alert('Data pertumbuhan berhasil disimpan!');
+            setIsModalOpen(false);
+            setHeightInput('');
+            setWeightInput('');
+            // reload to fetch updated data (or we could extract loadChildren and call it here)
+            window.location.reload();
+        } catch (error) {
+            console.error('Gagal menyimpan data:', error);
+            alert('Terjadi kesalahan saat menyimpan data.');
+        }
+    };
+
     return (
         <>
             {/* 2. BANNER PROFIL ANAK */}
@@ -107,10 +119,14 @@ const ParentDashboard: React.FC = () => {
                     </div>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => activeChild ? setIsModalOpen(true) : setIsAddChildModalOpen(true)}
                     className="w-full sm:w-auto px-5 py-2.5 bg-nutri-secondary hover:bg-opacity-90 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
                 >
-                    <span>⚖️</span> Timbang Sekarang
+                    {activeChild ? (
+                        <><span>⚖️</span> Timbang Sekarang</>
+                    ) : (
+                        <><span>➕</span> Buat Profil Anak</>
+                    )}
                 </button>
             </div>
 
@@ -150,9 +166,9 @@ const ParentDashboard: React.FC = () => {
                             <span className="px-3 py-1.5 bg-nutri-tertiary text-nutri-primaryDark rounded-full">✓ Tinggi Normal</span>
                             <span className="px-3 py-1.5 bg-nutri-secondary/20 text-orange-600 rounded-full">📈 Perlu Optimasi Berat</span>
                         </div>
-                        <a href="#" className="inline-flex items-center text-xs font-bold text-nutri-primaryDark hover:underline pt-2 gap-1">
+                        <Link to="/child-development" className="inline-flex items-center text-xs font-bold text-nutri-primaryDark hover:underline pt-2 gap-1">
                             Lihat Grafik Lengkap <span className="text-sm">→</span>
-                        </a>
+                        </Link>
                     </div>
 
                 </div>
@@ -161,42 +177,216 @@ const ParentDashboard: React.FC = () => {
             {/* 4. SECTION REKOMENDASI BERBELANJA */}
             <section className="space-y-4">
                 <h3 className="text-sm font-bold text-nutri-primaryDark uppercase tracking-wider">Rekomendasi Berbelanja</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-
-                    {/* Card Kiri: Resep Harian */}
-                    <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm flex flex-col group cursor-pointer">
-                        <div className="h-44 bg-gray-100 overflow-hidden relative">
-                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400" alt="Resep" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                            <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-[9px] font-extrabold text-nutri-primaryDark px-2 py-1 rounded-md uppercase tracking-wider">Daily Recipe</span>
-                        </div>
-                        <div className="p-6 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h4 className="font-bold text-nutri-primaryDark text-base mb-1.5">Resep MPASI 12–18 Bulan</h4>
-                                <p className="text-xs text-gray-400 leading-relaxed">Menu kaya zat besi untuk mendukung perkembangan kognitif Aiden hari ini.</p>
-                            </div>
-                            <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-50 text-[10px] text-gray-400 font-medium">
-                                <span>8 Menit Membaca</span>
-                                <span className="text-sm text-nutri-primary font-bold">→</span>
-                            </div>
-                        </div>
+                {products.length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-gray-100 p-8 text-center shadow-sm">
+                        <p className="text-4xl mb-3">🛒</p>
+                        <p className="text-sm text-gray-500">Belum ada produk tersedia.</p>
+                        <p className="text-xs text-gray-400 mt-1">Admin dapat menambahkan produk melalui halaman Admin Panel.</p>
                     </div>
-
-                    {/* Card Kanan: Promo Banner Katering */}
-                    <div className="bg-nutri-secondary/40 rounded-3xl p-6 md:p-8 flex flex-col justify-between relative overflow-hidden shadow-sm border border-nutri-secondary/20 min-h-[260px]">
-                        <div className="max-w-[65%] space-y-2">
-                            <span className="text-[9px] font-extrabold text-orange-700/80 uppercase tracking-widest block">Promo Terdekat</span>
-                            <h4 className="text-lg md:text-xl font-extrabold text-nutri-primaryDark leading-tight">Katering MPASI Lokal Terdekat</h4>
-                            <p className="text-xs text-gray-600/90 leading-relaxed">Diskon 20% untuk langganan paket 'Tumbuh Sehat' minggu ini.</p>
-                        </div>
-                        <button className="w-fit mt-6 px-4 py-2 bg-nutri-secondary hover:bg-opacity-90 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition">
-                            Cek Katering
-                        </button>
-                        {/* Gambar makanan mengambang dekoratif di kanan */}
-                        <div className="absolute right-[-20px] bottom-[-10px] w-40 h-40 bg-contain bg-no-repeat opacity-90 pointer-events-none bg-[url('https://www.svgrepo.com/show/275323/salad-bowl.svg')]"></div>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {products.map(product => (
+                            <div key={product.id} className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition">
+                                <div className="h-40 bg-gray-100 overflow-hidden relative">
+                                    {product.imageUrl ? (
+                                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-4xl bg-nutri-tertiary/30">
+                                            🍱
+                                        </div>
+                                    )}
+                                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[9px] font-extrabold text-nutri-primaryDark px-2 py-1 rounded-md uppercase tracking-wider">
+                                        {product.category}
+                                    </span>
+                                </div>
+                                <div className="p-5 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h4 className="font-bold text-nutri-primaryDark text-sm mb-1">{product.name}</h4>
+                                        {product.description && (
+                                            <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{product.description}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 mt-2 border-t border-gray-50">
+                                        <span className="text-sm font-extrabold text-nutri-primaryDark">
+                                            Rp {product.price.toLocaleString('id-ID')}
+                                        </span>
+                                        <Link 
+                                            to={`/products/${product.id}`}
+                                            className="text-[11px] font-bold text-nutri-primary hover:underline"
+                                        >
+                                            Lihat Detail →
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-
-                </div>
+                )}
             </section>
+
+            {/* 5. MODAL TAMBAH DATA / TIMBANG */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-xl relative animate-fade-in">
+                        <button 
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition"
+                        >
+                            ✕
+                        </button>
+                        <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">Timbang Sekarang</h3>
+                        <p className="text-xs text-gray-500 mb-6">Masukkan data tinggi dan berat badan terbaru {childData.name !== 'Belum ada profil anak' ? childData.name : 'anak'}.</p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5">Tinggi Badan (cm)</label>
+                                <input 
+                                    type="number" 
+                                    placeholder="Contoh: 85" 
+                                    value={heightInput}
+                                    onChange={(e) => setHeightInput(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5">Berat Badan (kg)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.1" 
+                                    placeholder="Contoh: 11.5" 
+                                    value={weightInput}
+                                    onChange={(e) => setWeightInput(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                />
+                            </div>
+                            
+                            <div className="pt-4 flex gap-3">
+                                <button 
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    onClick={handleSaveGrowth}
+                                    className="flex-1 py-3 bg-nutri-primary hover:bg-opacity-90 text-white font-bold rounded-xl text-sm shadow-sm transition"
+                                >
+                                    Simpan Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 6. MODAL BUAT PROFIL ANAK */}
+            {isAddChildModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-xl relative animate-fade-in">
+                        <button 
+                            onClick={() => setIsAddChildModalOpen(false)}
+                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition"
+                        >
+                            ✕
+                        </button>
+                        <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">Buat Profil Anak</h3>
+                        <p className="text-xs text-gray-500 mb-6">Masukkan data diri anak Anda untuk memulai.</p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5">Nama Anak</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Contoh: Aiden" 
+                                    value={childName}
+                                    onChange={(e) => setChildName(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Jenis Kelamin</label>
+                                    <select 
+                                        value={childGender}
+                                        onChange={(e) => setChildGender(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium bg-white"
+                                    >
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Tanggal Lahir</label>
+                                    <input 
+                                        type="date" 
+                                        value={childBirthDate}
+                                        onChange={(e) => setChildBirthDate(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Berat Lahir (kg)</label>
+                                    <input 
+                                        type="number" 
+                                        step="0.1" 
+                                        placeholder="Misal: 3.2" 
+                                        value={childBirthWeight}
+                                        onChange={(e) => setChildBirthWeight(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Tinggi Lahir (cm)</label>
+                                    <input 
+                                        type="number" 
+                                        placeholder="Misal: 50" 
+                                        value={childBirthHeight}
+                                        onChange={(e) => setChildBirthHeight(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nutri-primary/50 text-sm font-medium" 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="pt-4 flex gap-3">
+                                <button 
+                                    onClick={() => setIsAddChildModalOpen(false)}
+                                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        if (!childName || !childBirthDate || !childBirthWeight || !childBirthHeight) {
+                                            alert("Mohon lengkapi semua data anak.");
+                                            return;
+                                        }
+                                        try {
+                                            await api.post('/children/add', {
+                                                name: childName,
+                                                gender: childGender,
+                                                birthDate: childBirthDate,
+                                                birthWeight: parseFloat(childBirthWeight),
+                                                birthHeight: parseFloat(childBirthHeight)
+                                            });
+                                            alert("Profil anak berhasil dibuat!");
+                                            setIsAddChildModalOpen(false);
+                                            window.location.reload();
+                                        } catch (err) {
+                                            alert("Gagal membuat profil anak");
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="flex-1 py-3 bg-nutri-primary hover:bg-opacity-90 text-white font-bold rounded-xl text-sm shadow-sm transition"
+                                >
+                                    Buat Profil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

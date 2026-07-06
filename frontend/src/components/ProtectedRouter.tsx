@@ -1,9 +1,29 @@
 import React, { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { User } from "../types";
 
-const ProtectedRoute: React.FC = () => {
+interface ProtectedRouteProps {
+    allowedRoles?: Array<User['role']>;
+}
+
+const getDashboardPath = (role: User['role']) => {
+    switch (role) {
+        case 'ADMIN':
+            return '/admin';
+        case 'DOCTOR':
+            return '/doctor';
+        case 'SELLER':
+            return '/seller';
+        case 'PARENT':
+        default:
+            return '/parent-dashboard';
+    }
+};
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     const auth = useContext(AuthContext);
+    const location = useLocation();
 
     if (auth?.loading) {
         return (
@@ -13,13 +33,15 @@ const ProtectedRoute: React.FC = () => {
         );
     }
 
-    // jika token tidak ada, lempar user kembali ke halaman login
-    if (!auth?.token) {
-        return <Navigate to="/login" replace />;
+    if (!auth?.token || !auth.user) {
+        return <Navigate to="/login" replace state={{ from: location }} />;
     }
 
-    // jika aman, izinkan akses masuk kehalaman anak
-    return <Outlet />
+    if (allowedRoles && !allowedRoles.includes(auth.user.role)) {
+        return <Navigate to={getDashboardPath(auth.user.role)} replace />;
+    }
+
+    return <Outlet />;
 };
 
 export default ProtectedRoute;

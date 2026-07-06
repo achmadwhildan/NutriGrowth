@@ -37,7 +37,6 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const thumbnails = [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 font-sans space-y-8">
