@@ -42,6 +42,29 @@ export const getDashboardStats = async (req, res) => {
                 }
             });
         }
+
+        // jika yang login adalah seller
+        if (userRole === 'SELLER') {
+            const totalProducts = await prisma.product.count();
+            const orders = await prisma.order.findMany();
+            
+            // asumsi pendapatan seller sama dengan admin (jika single vendor)
+            const totalRevenue = orders
+                .filter(o => o.status !== 'CANCELLED')
+                .reduce((sum, order) => sum + Number(order.totalAmount), 0);
+            
+            const pendingOrders = orders.filter(o => o.status === 'PENDING').length;
+            const processingOrders = orders.filter(o => o.status === 'PROCESSING').length;
+
+            return res.status(200).json({
+                stats: {
+                    totalRevenue,
+                    pendingOrders,
+                    processingOrders,
+                    totalProducts,
+                }
+            });
+        }
     } catch (error) {
         res.status(500).json({ message: "Gagal memuat statistik dashboard", error: error.message });
     }

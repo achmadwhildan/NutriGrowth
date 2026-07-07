@@ -53,6 +53,7 @@ export const getPendingVerifications = async (req, res) => {
                 name: true,
                 email: true,
                 phoneNumber: true,
+                documentUrl: true,
                 createdAt: true,
                 role: true,
             },

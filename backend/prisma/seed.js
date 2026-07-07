@@ -2,17 +2,15 @@ import prisma from '../src/config/prisma.js';
 import bcrypt from 'bcrypt';
 
 async function main() {
-  console.log('Cleaning up existing database records...');
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.consultation.deleteMany();
-  await prisma.doctor.deleteMany();
-  await prisma.growthLog.deleteMany();
-  await prisma.child.deleteMany();
-  await prisma.user.deleteMany();
+  console.log('Checking existing database records...');
+  const existingUserCount = await prisma.user.count();
 
-  console.log('Database cleaned. Starting seeding...');
+  if (existingUserCount > 0) {
+    console.log('Database already contains data. Skipping seed to avoid overwriting existing records.');
+    return;
+  }
+
+  console.log('No existing users found. Starting seeding...');
 
   // Hash passwords
   const passwordHash = await bcrypt.hash('password123', 10);

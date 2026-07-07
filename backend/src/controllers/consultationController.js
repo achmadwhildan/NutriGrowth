@@ -77,11 +77,30 @@ export const createConsultation = async (req, res) => {
     }
 };
 
-// Ambil daftar konsultasi milik user
+// Ambil daftar konsultasi milik user atau dokter
 export const getMyConsultations = async (req, res) => {
     try {
         const userId = req.user.id;
-        const consults = await prisma.consultation.findMany({ where: { userId }, include: { doctor: true }, orderBy: { createdAt: 'desc' } });
+        const role = req.user.role;
+        
+        let consults = [];
+        if (role === 'DOCTOR') {
+            const doctor = await prisma.doctor.findUnique({ where: { userId } });
+            if (!doctor) return res.status(404).json({ message: 'Profil dokter tidak ditemukan' });
+            
+            consults = await prisma.consultation.findMany({ 
+                where: { doctorId: doctor.id }, 
+                include: { user: true, doctor: true }, 
+                orderBy: { createdAt: 'desc' } 
+            });
+        } else {
+            consults = await prisma.consultation.findMany({ 
+                where: { userId }, 
+                include: { doctor: true }, 
+                orderBy: { createdAt: 'desc' } 
+            });
+        }
+        
         res.status(200).json({ message: 'Berhasil mengambil konsultasi', data: consults });
     } catch (error) {
         console.error(error);
@@ -92,12 +111,80 @@ export const getMyConsultations = async (req, res) => {
 // Ambil daftar dokter aktif (untuk marketplace)
 export const getDoctors = async (req, res) => {
     try {
-        const doctors = await prisma.doctor.findMany({ where: { isActive: true } });
-        res.status(200).json({ message: 'Berhasil mengambil daftar dokter', data: doctors });
+        const doctors = await prisma.doctor.findMany({ 
+            where: { isActive: true },
+            include: { user: true }
+        });
+        
+        // Map data agar nama dan email ter-include
+        const mappedDoctors = doctors.map(d => ({
+            id: d.id,
+            userId: d.userId,
+            name: d.user?.name || 'Dokter',
+            specialization: d.bio || 'Dokter Spesialis',
+            pricePerSession: d.pricePerSession,
+            photoUrl: d.photoUrl,
+            isActive: d.isActive
+        }));
+
+        res.status(200).json({ message: 'Berhasil mengambil daftar dokter', data: mappedDoctors });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Gagal mengambil dokter', error: error.message });
     }
 };
 
-export default { getMessages, sendMessage };
+// Ambil detail dokter berdasarkan ID
+export const getDoctorById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const doctor = await prisma.doctor.findUnique({
+            where: { id },
+            include: { 
+                user: { select: { name: true, email: true } },
+                schedules: true
+            }
+        });
+
+        if (!doctor) {
+            return res.status(404).json({ message: 'Dokter tidak ditemukan' });
+        }
+
+        res.status(200).json({ message: 'Berhasil mengambil detail dokter', data: doctor });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Gagal mengambil detail dokter', error: error.message });
+    }
+};
+
+// Update status konsultasi (oleh dokter)
+export const updateConsultationStatus = async (req, res) => {
+    try {
+        const { consultationId } = req.params;
+        const { status } = req.body;
+        const userId = req.user.id;
+        
+        if (req.user.role !== 'DOCTOR') {
+            return res.status(403).json({ message: 'Akses ditolak: hanya dokter' });
+        }
+
+        const doctor = await prisma.doctor.findUnique({ where: { userId } });
+        const consult = await prisma.consultation.findUnique({ where: { id: consultationId } });
+        
+        if (!doctor || !consult || consult.doctorId !== doctor.id) {
+            return res.status(404).json({ message: 'Konsultasi tidak ditemukan / bukan hak Anda' });
+        }
+
+        const updated = await prisma.consultation.update({
+            where: { id: consultationId },
+            data: { status }
+        });
+
+        res.status(200).json({ message: 'Status berhasil diperbarui', data: updated });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Gagal memperbarui status', error: error.message });
+    }
+};
+
+export default { getMessages, sendMessage, createConsultation, getMyConsultations, getDoctors, getDoctorById, updateConsultationStatus };

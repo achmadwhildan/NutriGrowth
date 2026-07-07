@@ -31,3 +31,15 @@ export const verifyAdmin = (req, res, next) => {
 
     next();
 }
+
+export const verifyAdminOrSeller = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ message: "Akses ditolak! Autentikasi diperlukan."})
+    }
+
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SELLER') {
+        return res.status(403).json({ message: "Akses ditolak! Fitur ini hanya untuk Admin atau Seller. ⛔" });
+    }
+
+    next();
+}

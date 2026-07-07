@@ -28,10 +28,17 @@ export const createOrder = async (req, res) => {
             prisma.order.create({
                 data: {
                     userId,
-                    productId,
-                    quantity: parseInt(quantity),
-                    totalPrice,
+                    totalAmount: totalPrice,
                     status: "PENDING",
+                    items: {
+                        create: [
+                            {
+                                productId,
+                                quantity: parseInt(quantity),
+                                priceAtPurchase: product.price
+                            }
+                        ]
+                    }
                 }
             }),
             // kurangi stok produk 

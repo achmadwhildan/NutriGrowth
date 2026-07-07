@@ -38,20 +38,21 @@
   // --- MODELS ---
 
   model User {
-    id           String         @id @default(uuid())
-    name         String
-    email        String         @unique
-    password     String
-    role         Role           @default(PARENT)
-    phoneNumber  String?
-    address      String?
-    isVerified   Boolean        @default(false) // Untuk verifikasi dokter & seller oleh admin
-    children     Child[]
-    orders       Order[]
+    id            String         @id @default(uuid())
+    name          String
+    email         String         @unique
+    password      String
+    role          Role           @default(PARENT)
+    phoneNumber   String?
+    address       String?
+    documentUrl   String?        // Link dokumen validasi (STR/SIP Dokter atau Izin Katering)
+    isVerified    Boolean        @default(false) // Untuk verifikasi dokter & seller oleh admin
+    children      Child[]
+    orders        Order[]
     consultations Consultation[]
     doctorProfile Doctor?        // Relasi ke profil dokter jika role = DOCTOR
-    createdAt    DateTime       @default(now())
-    updatedAt    DateTime       @updatedAt
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
 
     @@map("users")
   }
@@ -101,6 +102,7 @@
     isActive        Boolean        @default(true)
     bio             String?        // Tentang dokter (opsional)
     photoUrl        String?        // Foto profil dokter (opsional)
+    schedules       DoctorSchedule[]
     consultations   Consultation[]
     createdAt       DateTime       @default(now())
     updatedAt       DateTime       @updatedAt
@@ -177,4 +179,18 @@ model OrderItem {
   updatedAt       DateTime @updatedAt
 
   @@map("order_items")
+}
+
+model DoctorSchedule {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek String   // Contoh: 'Senin', 'Selasa', 'Rabu', dll.
+  times     String[] // Kumpulan jam, contoh: ['09:00', '10:00', '14:00']
+  isActive  Boolean  @default(true) // Apakah dokter membuka praktik di hari tsb
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, dayOfWeek])
+  @@map("doctor_schedules")
 }
