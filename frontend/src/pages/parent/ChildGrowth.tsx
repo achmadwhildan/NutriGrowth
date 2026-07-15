@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { RefreshCw, Plus, Activity, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 import { Child } from '../../types';
 
@@ -15,6 +16,8 @@ const ChildGrowth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'berat' | 'tinggi'>('berat');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [activeChild, setActiveChild] = useState<Child | null>(null);
+  const [childrenList, setChildrenList] = useState<Child[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [logs, setLogs] = useState<GrowthLog[]>([]);
   
   const [heightInput, setHeightInput] = useState('');
@@ -26,6 +29,7 @@ const ChildGrowth: React.FC = () => {
         try {
             const res = await api.get('/children');
             const list: Child[] = res.data.data || [];
+            setChildrenList(list);
             if (list.length > 0) {
                 setActiveChild(list[0]);
             }
@@ -49,6 +53,11 @@ const ChildGrowth: React.FC = () => {
     };
     loadGrowth();
   }, [activeChild]);
+
+  const handleSwitchChild = (child: Child) => {
+      setActiveChild(child);
+      setIsDropdownOpen(false);
+  };
 
   const handleSaveGrowth = async () => {
       if (!activeChild || !activeChild.id) {
@@ -128,18 +137,43 @@ const ChildGrowth: React.FC = () => {
         </div>
 
         {/* Menu Navigasi Mini */}
-        <div className="space-y-1 text-xs font-bold">
+        <div className="space-y-1 text-xs font-bold relative">
           <button 
-            onClick={() => alert("Fitur Profile Switcher untuk banyak anak sedang dalam pengembangan 🚀")}
-            className="w-full flex items-center gap-2 px-4 py-3 bg-orange-100 text-orange-700 rounded-xl"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full flex items-center gap-2 px-4 py-3 bg-orange-100 text-orange-700 rounded-xl transition hover:bg-orange-200"
           >
-            <span>🔄</span> Profile Switcher
+            <RefreshCw className={`w-4 h-4 transition ${isDropdownOpen ? 'rotate-180' : ''}`} /> Profile Switcher
           </button>
+          
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute top-12 left-0 w-full bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden mt-1">
+                {childrenList.map(child => (
+                    <button
+                        key={child.id}
+                        onClick={() => handleSwitchChild(child)}
+                        className={`w-full text-left px-4 py-3 flex items-center gap-3 transition ${activeChild?.id === child.id ? 'bg-nutri-primary/10 text-nutri-primaryDark' : 'hover:bg-gray-50 text-gray-700'}`}
+                    >
+                        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                            <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=100" alt="Avatar" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <p className="font-bold">{child.name}</p>
+                            <p className="text-[10px] text-gray-500 font-medium">{child.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</p>
+                        </div>
+                    </button>
+                ))}
+                {childrenList.length === 0 && (
+                    <div className="px-4 py-3 text-gray-500 text-center">Belum ada profil</div>
+                )}
+            </div>
+          )}
+
           <button 
             onClick={() => setIsModalOpen(true)}
             className="w-full flex items-center gap-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl transition"
           >
-            <span>➕</span> Add Entry
+            <Plus className="w-4 h-4" /> Add Entry
           </button>
         </div>
 
@@ -219,10 +253,10 @@ const ChildGrowth: React.FC = () => {
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-nutri-primaryDark">Riwayat Input</h3>
             <button 
-                onClick={() => alert("Seluruh riwayat sudah ditampilkan di daftar bagian bawah ini 📜")}
-                className="text-xs font-bold text-gray-400 hover:text-nutri-primary transition"
+                onClick={() => alert("Seluruh riwayat sudah ditampilkan di daftar bagian bawah ini")}
+                className="text-xs font-bold text-gray-400 hover:text-nutri-primary transition flex items-center"
             >
-                Lihat Semua →
+                Lihat Semua <ChevronRight className="w-3 h-3 ml-0.5" />
             </button>
           </div>
 
@@ -233,8 +267,8 @@ const ChildGrowth: React.FC = () => {
             ) : historyLogs.map((log) => (
               <div key={log.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-gray-200 transition">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-sm border border-gray-100">
-                    📉
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 text-gray-400">
+                    <Activity className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-nutri-primaryDark">{log.date}</h4>

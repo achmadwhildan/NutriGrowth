@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Info, ArrowRight } from 'lucide-react';
 
 const SetupChildProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -98,12 +99,12 @@ const SetupChildProfile: React.FC = () => {
             </div>
 
             <div className="bg-nutri-secondary/20 border border-nutri-secondary/30 rounded-xl p-4 text-[11px] text-nutri-primaryDark font-medium flex gap-3">
-              <span className="text-lg">ⓘ</span>
+              <Info className="w-5 h-5 flex-shrink-0" />
               <p>Jangan khawatir, Bunda! Anda dapat memperbarui informasi ini kapan saja di menu Pengaturan.</p>
             </div>
 
             <button type="submit" className="w-full py-4 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-sm shadow-sm transition mt-4 flex justify-center items-center gap-2">
-              Simpan & Mulai Pantau <span>→</span>
+              Simpan & Mulai Pantau <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 

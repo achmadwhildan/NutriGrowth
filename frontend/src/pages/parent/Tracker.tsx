@@ -1,4 +1,5 @@
 import React, { useState, FormEvent, useEffect } from "react";
+import { Scale, RefreshCw, ScrollText } from 'lucide-react';
 import api from "../../services/api";
 import { Child } from '../../types';
 
@@ -102,19 +103,19 @@ const Tracker: React.FC = () => {
                             onClick={() => setActiveSubMenu('timbang')}
                             className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'timbang' ? 'bg-nutri-secondary text-nutri-primaryDark' : 'hover:bg-gray-50 text-gray-600'}`}
                         >
-                            <span>⚖️</span> Timbang Sekarang
+                            <Scale className="w-4 h-4" /> Timbang Sekarang
                         </button>
                         <button
                             onClick={() => setActiveSubMenu('switcher')}
                             className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'switcher' ? 'bg-nutri-secondary text-nutri-primaryDark' : 'hover:bg-gray-50'}`}
                         >
-                            <span>🔄</span> Profile Switcher
+                            <RefreshCw className="w-4 h-4" /> Profile Switcher
                         </button>
                         <button
                             onClick={() => setActiveSubMenu('riwayat')}
                             className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl transition ${activeSubMenu === 'riwayat' ? 'bg-nutri-secondary text-nutri-primaryDark' : 'hover:bg-gray-50'}`}
                         >
-                            <span>📜</span> Riwayat
+                            <ScrollText className="w-4 h-4" /> Riwayat
                         </button>
                     </nav>
                 </div>

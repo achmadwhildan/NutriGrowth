@@ -10,18 +10,7 @@ const SellerOrders: React.FC = () => {
         const load = async () => {
             setLoading(true);
             try {
-                // coba ambil pesanan milik user (jika backend mengembalikan untuk seller)
-                let res = null;
-                try {
-                    res = await api.get('/shop/orders/my');
-                } catch (err) {
-                    // jika gagal atau kosong, coba ambil semua pesanan (admin)
-                    try {
-                        res = await api.get('/shop/orders');
-                    } catch (e) {
-                        console.error('Gagal mengambil pesanan seller/admin:', e);
-                    }
-                }
+                const res = await api.get('/shop/orders');
 
                 const data = res?.data?.data || [];
 

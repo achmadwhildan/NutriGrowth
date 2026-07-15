@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Users, Stethoscope, Store, Banknote } from 'lucide-react';
 import api from '../../services/api';
 
 interface StatItem {
     label: string;
     value: string;
     growth: string;
-    icon: string;
+    icon: React.ReactNode;
 }
 
 const defaultStats: StatItem[] = [
-    { label: 'Total Pengguna', value: '—', growth: '—', icon: '👨‍👩‍👧' },
-    { label: 'Dokter Aktif', value: '—', growth: '—', icon: '👨‍⚕️' },
-    { label: 'Seller Aktif', value: '—', growth: '—', icon: '🏪' },
-    { label: 'Pendapatan Platform', value: '—', growth: '—', icon: '💰' },
+    { label: 'Total Pengguna', value: '—', growth: '—', icon: <Users className="w-8 h-8 text-nutri-primary" /> },
+    { label: 'Dokter Aktif', value: '—', growth: '—', icon: <Stethoscope className="w-8 h-8 text-nutri-secondary" /> },
+    { label: 'Seller Aktif', value: '—', growth: '—', icon: <Store className="w-8 h-8 text-amber-500" /> },
+    { label: 'Pendapatan Platform', value: '—', growth: '—', icon: <Banknote className="w-8 h-8 text-green-500" /> },
 ];
 
 const AdminDashboard: React.FC = () => {
@@ -42,10 +43,10 @@ const AdminDashboard: React.FC = () => {
                     }).format(value);
 
                 setStats([
-                    { label: 'Total Pengguna', value: data.totalUsers.toLocaleString(), growth: '—', icon: '👨‍👩‍👧' },
-                    { label: 'Dokter Aktif', value: data.totalDoctors.toLocaleString(), growth: '—', icon: '👨‍⚕️' },
-                    { label: 'Seller Aktif', value: data.totalSellers.toLocaleString(), growth: '—', icon: '🏪' },
-                    { label: 'Pendapatan Platform', value: formatCurrency(data.platformRevenue), growth: '—', icon: '💰' },
+                    { label: 'Total Pengguna', value: data.totalUsers.toLocaleString(), growth: '—', icon: <Users className="w-8 h-8 text-nutri-primary" /> },
+                    { label: 'Dokter Aktif', value: data.totalDoctors.toLocaleString(), growth: '—', icon: <Stethoscope className="w-8 h-8 text-nutri-secondary" /> },
+                    { label: 'Seller Aktif', value: data.totalSellers.toLocaleString(), growth: '—', icon: <Store className="w-8 h-8 text-amber-500" /> },
+                    { label: 'Pendapatan Platform', value: formatCurrency(data.platformRevenue), growth: '—', icon: <Banknote className="w-8 h-8 text-green-500" /> },
                 ]);
 
                 setPendingDoctors(doctorPendingRes.data.data.length);
@@ -100,7 +101,7 @@ const AdminDashboard: React.FC = () => {
                         <ul className="space-y-4">
                             <li className="flex justify-between items-center p-4 bg-orange-50 rounded-xl border border-orange-100">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-2xl">👨‍⚕️</span>
+                                    <span className="flex items-center justify-center w-10 h-10"><Stethoscope className="w-6 h-6 text-orange-500" /></span>
                                     <div>
                                         <p className="font-semibold text-gray-900 text-sm">Verifikasi Dokter Baru</p>
                                         <p className="text-xs text-gray-500">{pendingDoctors} permohonan menunggu</p>
@@ -110,7 +111,7 @@ const AdminDashboard: React.FC = () => {
                             </li>
                             <li className="flex justify-between items-center p-4 bg-blue-50 rounded-xl border border-blue-100">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-2xl">🏪</span>
+                                    <span className="flex items-center justify-center w-10 h-10"><Store className="w-6 h-6 text-blue-500" /></span>
                                     <div>
                                         <p className="font-semibold text-gray-900 text-sm">Verifikasi Katering/Seller Baru</p>
                                         <p className="text-xs text-gray-500">{pendingSellers} permohonan menunggu</p>

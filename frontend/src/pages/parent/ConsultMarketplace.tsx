@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import api from '../../services/api';
 
 type Product = {
@@ -90,7 +91,7 @@ const ConsultMarketplace: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
-                  <span>★</span> {Number(doc.pricePerSession || 0).toFixed(0)}
+                  <Star className="w-3 h-3 fill-orange-600" /> {Number(doc.pricePerSession || 0).toFixed(0)}
                 </div>
               </div>
               
@@ -142,7 +143,7 @@ const ConsultMarketplace: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
-                      <span>★</span> {Number(p.price || 0).toLocaleString('id-ID')}
+                      <Star className="w-3 h-3 fill-orange-600" /> {Number(p.price || 0).toLocaleString('id-ID')}
                     </div>
                   </div>
                   <div className="flex justify-between items-end pt-4 border-t border-gray-50 mt-2">

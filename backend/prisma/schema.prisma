@@ -50,6 +50,7 @@
     children      Child[]
     orders        Order[]
     consultations Consultation[]
+    notifications Notification[]
     doctorProfile Doctor?        // Relasi ke profil dokter jika role = DOCTOR
     createdAt     DateTime       @default(now())
     updatedAt     DateTime       @updatedAt
@@ -131,11 +132,27 @@
     consultation   Consultation  @relation(fields: [consultationId], references: [id], onDelete: Cascade)
     senderId       String?
     senderRole     Role
-    text           String
+    text           String?       // Opsional karena bisa jadi cuma kirim gambar tanpa teks
+    attachmentUrl  String?
+    attachmentType String?       // 'image' atau 'document'
     isRead         Boolean       @default(false)
     createdAt      DateTime      @default(now())
 
     @@map("chat_messages")
+  }
+
+  model Notification {
+    id        String   @id @default(uuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    title     String
+    message   String
+    type      String   @default("info") // 'info', 'success', 'warning'
+    isRead    Boolean  @default(false)
+    link      String?  // Optional URL
+    createdAt DateTime @default(now())
+
+    @@map("notifications")
   }
 
   model Product {

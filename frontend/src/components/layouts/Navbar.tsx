@@ -1,6 +1,7 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import NotificationBell from '../NotificationBell';
 
 const Navbar: React.FC = () => {
     const location = useLocation();
@@ -47,15 +48,13 @@ const Navbar: React.FC = () => {
                     <Link to="/chat" className={getLinkClass('/chat')}>Chat</Link>
                 </nav>
                 <div className="flex items-center gap-4">
-                    <button className="p-2 text-gray-400 hover:text-nutri-primary transition relative">
-                        🔔 <span className="absolute top-2 right-2 w-2 h-2 bg-nutri-secondary rounded-full"></span>
-                    </button>
+                    <NotificationBell />
                     <div className="relative" ref={dropdownRef}>
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 hover:ring-2 hover:ring-nutri-primary/50 transition focus:outline-none"
                         >
-                            <img src={auth?.user?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100"} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={(auth?.user as any)?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100"} alt="Profile" className="w-full h-full object-cover" />
                         </button>
                         {isDropdownOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-fade-in origin-top-right">

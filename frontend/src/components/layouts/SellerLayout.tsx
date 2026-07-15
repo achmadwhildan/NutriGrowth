@@ -1,6 +1,8 @@
 import React, { ReactNode, useState, useContext, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Store } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import NotificationBell from '../NotificationBell';
 
 const SellerNavbar: React.FC = () => {
     const location = useLocation();
@@ -45,15 +47,13 @@ const SellerNavbar: React.FC = () => {
                     <Link to="/seller/orders" className={getLinkClass('/seller/orders')}>Pesanan Masuk</Link>
                 </nav>
                 <div className="flex items-center gap-4">
-                    <button className="p-2 text-gray-400 hover:text-nutri-primary transition relative">
-                        🔔 <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full"></span>
-                    </button>
+                    <NotificationBell />
                     <div className="relative" ref={dropdownRef}>
                         <button 
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-gray-200 flex items-center justify-center hover:ring-2 hover:ring-nutri-primary/50 transition focus:outline-none"
                         >
-                            🏪
+                            <Store className="w-5 h-5 text-gray-600" />
                         </button>
                         {isDropdownOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-fade-in origin-top-right">

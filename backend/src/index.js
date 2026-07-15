@@ -17,6 +17,7 @@ import recommendationRoutes from './routes/recommendationRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import consultationRoutes from './routes/consultationRoutes.js';
 import doctorRoutes from './routes/doctorRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Supa
 app.use('/api/auth', authRoutes); 
 app.use('/api/children', childRoutes);
 app.use('/api/growth', growthRoutes); // Rute untuk log perkembangan gizi
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);

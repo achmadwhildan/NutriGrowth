@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import api from '../../services/api';
 
 const SellerProducts: React.FC = () => {
@@ -108,7 +109,7 @@ const SellerProducts: React.FC = () => {
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-gray-800">Tambah Produk Baru</h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 font-bold"><X className="w-5 h-5" /></button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>

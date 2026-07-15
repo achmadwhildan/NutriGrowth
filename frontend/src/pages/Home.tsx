@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { TrendingUp, Utensils, Users, Stethoscope, Star, Activity, ShoppingCart, Carrot, Fish, Leaf, Bot, Gift, CheckCircle } from 'lucide-react';
 
 // ── Sub-komponen FAQ Accordion ──────────────────────────────────────────────
 const faqs = [
@@ -180,7 +181,7 @@ const Home: React.FC = () => {
                 <div className="w-full max-w-4xl h-[320px] md:h-[460px] rounded-3xl overflow-hidden shadow-2xl relative bg-nutri-tertiary/50 border border-nutri-primary/10">
                     {/* Floating Insight Card — Top Left */}
                     <div className="absolute top-5 left-5 z-10 bg-white/95 backdrop-blur-sm p-3.5 rounded-2xl shadow-lg flex items-center gap-3 border border-white/60 max-w-[200px] text-left">
-                        <div className="w-9 h-9 rounded-xl bg-nutri-tertiary flex items-center justify-center text-lg flex-shrink-0">📈</div>
+                        <div className="w-9 h-9 rounded-xl bg-nutri-tertiary flex items-center justify-center text-lg flex-shrink-0"><TrendingUp className="w-5 h-5 text-nutri-primaryDark" /></div>
                         <div>
                             <h4 className="text-[11px] font-bold text-nutri-primaryDark leading-tight">Growth Insight</h4>
                             <p className="text-[10px] text-gray-500 leading-snug mt-0.5">Tinggi badan di atas rata-rata! ✨</p>
@@ -189,7 +190,7 @@ const Home: React.FC = () => {
 
                     {/* Floating Next Meal Card — Top Right */}
                     <div className="absolute top-5 right-5 z-10 bg-white/95 backdrop-blur-sm p-3.5 rounded-2xl shadow-lg flex items-center gap-3 border border-white/60 max-w-[200px] text-left">
-                        <div className="w-9 h-9 rounded-xl bg-nutri-secondary/30 flex items-center justify-center text-lg flex-shrink-0">🍚</div>
+                        <div className="w-9 h-9 rounded-xl bg-nutri-secondary/30 flex items-center justify-center text-lg flex-shrink-0"><Utensils className="w-5 h-5 text-nutri-primaryDark" /></div>
                         <div>
                             <h4 className="text-[11px] font-bold text-nutri-primaryDark leading-tight">Menu Hari Ini</h4>
                             <p className="text-[10px] text-gray-500 leading-snug mt-0.5">Bubur Ayam + Sayur Bayam</p>
@@ -232,13 +233,13 @@ const Home: React.FC = () => {
             <section className="bg-nutri-primaryDark py-10">
                 <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                     {[
-                        { icon: "👨‍👩‍👧", value: "50.000+", label: "Keluarga Aktif" },
-                        { icon: "👨‍⚕️", value: "200+",    label: "Dokter & Ahli Gizi" },
-                        { icon: "🍽️",   value: "1 Juta+", label: "Resep MPASI" },
-                        { icon: "⭐",   value: "4.9 / 5",  label: "Rating Pengguna" },
+                        { icon: <Users className="w-6 h-6 text-white" />, value: "50.000+", label: "Keluarga Aktif" },
+                        { icon: <Stethoscope className="w-6 h-6 text-white" />, value: "200+",    label: "Dokter & Ahli Gizi" },
+                        { icon: <Utensils className="w-6 h-6 text-white" />,   value: "1 Juta+", label: "Resep MPASI" },
+                        { icon: <Star className="w-6 h-6 text-white" />,   value: "4.9 / 5",  label: "Rating Pengguna" },
                     ].map((stat) => (
                         <div key={stat.label} className="flex flex-col items-center gap-1">
-                            <span className="text-2xl">{stat.icon}</span>
+                            <span className="text-2xl mb-2 flex justify-center text-white">{stat.icon}</span>
                             <span className="text-2xl font-extrabold text-white">{stat.value}</span>
                             <span className="text-xs text-white/60 font-medium">{stat.label}</span>
                         </div>
@@ -264,7 +265,7 @@ const Home: React.FC = () => {
                         {/* ── Fitur 1: Tracking ── */}
                         <div className="group border border-gray-100 rounded-3xl p-8 text-left bg-nutri-neutralBg/30 hover:bg-nutri-neutralBg/70 hover:border-nutri-primary/20 transition-all duration-300 flex flex-col justify-between min-h-[400px]">
                             <div>
-                                <div className="w-11 h-11 bg-nutri-primary/20 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-primary/30 transition">📊</div>
+                                <div className="w-11 h-11 bg-nutri-primary/20 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-primary/30 transition"><Activity className="w-6 h-6 text-nutri-primaryDark" /></div>
                                 <h3 className="text-xl font-bold text-nutri-primaryDark mb-2">Pelacakan Tumbuh Kembang</h3>
                                 <p className="text-xs text-gray-500 leading-relaxed">
                                     Catat berat badan, tinggi, dan lingkar kepala si Kecil. Dapatkan grafik standar WHO otomatis untuk memantau setiap milestone-nya.
@@ -282,7 +283,7 @@ const Home: React.FC = () => {
                         {/* ── Fitur 2: Konsultasi Ahli ── */}
                         <div className="group border border-gray-100 rounded-3xl p-8 text-left bg-nutri-tertiary/60 hover:bg-nutri-tertiary/90 hover:border-nutri-primary/30 transition-all duration-300 flex flex-col justify-between min-h-[400px]">
                             <div>
-                                <div className="w-11 h-11 bg-white/60 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-white/80 transition">🏥</div>
+                                <div className="w-11 h-11 bg-white/60 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-white/80 transition"><Stethoscope className="w-6 h-6 text-nutri-primaryDark" /></div>
                                 <h3 className="text-xl font-bold text-nutri-primaryDark mb-2">Konsultasi Ahli Kapan Saja</h3>
                                 <p className="text-xs text-gray-500 leading-relaxed">
                                     Tanya jawab langsung dengan dokter anak dan ahli gizi MPASI bersertifikat. Respons cepat, jadwal fleksibel.
@@ -291,21 +292,21 @@ const Home: React.FC = () => {
                             {/* Mockup Chat */}
                             <div className="mt-6 bg-white rounded-2xl p-4 shadow-sm space-y-3">
                                 <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-nutri-primary/30 flex items-center justify-center text-sm flex-shrink-0">👨‍⚕️</div>
+                                    <div className="w-8 h-8 rounded-full bg-nutri-primary/30 flex items-center justify-center text-sm flex-shrink-0"><Stethoscope className="w-4 h-4 text-nutri-primaryDark" /></div>
                                     <div className="bg-nutri-tertiary/50 rounded-2xl rounded-tl-none px-3 py-2.5 text-[11px] text-nutri-primaryDark max-w-[80%]">
                                         Selamat siang Bunda! Ada yang bisa saya bantu mengenai nutrisi Rafif?
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 flex-row-reverse">
-                                    <div className="w-8 h-8 rounded-full bg-nutri-secondary/40 flex items-center justify-center text-sm flex-shrink-0">👩</div>
+                                    <div className="w-8 h-8 rounded-full bg-nutri-secondary/40 flex items-center justify-center text-sm flex-shrink-0"><Users className="w-4 h-4 text-nutri-primaryDark" /></div>
                                     <div className="bg-nutri-primaryDark/10 rounded-2xl rounded-tr-none px-3 py-2.5 text-[11px] text-nutri-primaryDark max-w-[80%]">
                                         Dok, anak saya 7 bulan belum mau makan sayur, normal kah?
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-nutri-primary/30 flex items-center justify-center text-sm flex-shrink-0">👨‍⚕️</div>
+                                    <div className="w-8 h-8 rounded-full bg-nutri-primary/30 flex items-center justify-center text-sm flex-shrink-0"><Stethoscope className="w-4 h-4 text-nutri-primaryDark" /></div>
                                     <div className="bg-nutri-tertiary/50 rounded-2xl rounded-tl-none px-3 py-2.5 text-[11px] text-nutri-primaryDark max-w-[80%]">
-                                        Normal Bunda 😊 Coba variasikan tekstur & warna sayurnya...
+                                        Normal Bunda! Coba variasikan tekstur & warna sayurnya...
                                     </div>
                                 </div>
                             </div>
@@ -314,7 +315,7 @@ const Home: React.FC = () => {
                         {/* ── Fitur 3: Marketplace MPASI ── */}
                         <div className="group border border-gray-100 rounded-3xl p-8 text-left bg-nutri-secondary/10 hover:bg-nutri-secondary/20 hover:border-nutri-secondary/40 transition-all duration-300 flex flex-col justify-between min-h-[340px]">
                             <div>
-                                <div className="w-11 h-11 bg-nutri-secondary/30 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-secondary/50 transition">🛒</div>
+                                <div className="w-11 h-11 bg-nutri-secondary/30 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-secondary/50 transition"><ShoppingCart className="w-6 h-6 text-nutri-primaryDark" /></div>
                                 <h3 className="text-xl font-bold text-nutri-primaryDark mb-2">Marketplace MPASI Terkurasi</h3>
                                 <p className="text-xs text-gray-500 leading-relaxed mb-6">
                                     Belanja produk MPASI premium yang sudah diseleksi oleh tim ahli gizi kami. Aman, bergizi, langsung ke pintu rumah Bunda.
@@ -323,12 +324,12 @@ const Home: React.FC = () => {
                             {/* Mini product cards */}
                             <div className="grid grid-cols-3 gap-2">
                                 {[
-                                    { emoji: "🥕", name: "Puree Wortel", price: "Rp 25k" },
-                                    { emoji: "🐟", name: "Ikan Salmon", price: "Rp 45k" },
-                                    { emoji: "🥦", name: "Brokoli Beku", price: "Rp 30k" },
+                                    { emoji: <Carrot className="w-5 h-5 mx-auto text-orange-500" />, name: "Puree Wortel", price: "Rp 25k" },
+                                    { emoji: <Fish className="w-5 h-5 mx-auto text-blue-500" />, name: "Ikan Salmon", price: "Rp 45k" },
+                                    { emoji: <Leaf className="w-5 h-5 mx-auto text-green-500" />, name: "Brokoli Beku", price: "Rp 30k" },
                                 ].map((p) => (
                                     <div key={p.name} className="bg-white rounded-xl p-3 text-center shadow-sm border border-gray-100 hover:shadow-md transition">
-                                        <div className="text-2xl mb-1">{p.emoji}</div>
+                                        <div className="mb-1 flex justify-center">{p.emoji}</div>
                                         <p className="text-[10px] font-semibold text-nutri-primaryDark leading-tight">{p.name}</p>
                                         <p className="text-[10px] text-nutri-secondary font-bold mt-1">{p.price}</p>
                                     </div>
@@ -339,7 +340,7 @@ const Home: React.FC = () => {
                         {/* ── Fitur 4: Resep AI ── */}
                         <div className="group border border-gray-100 rounded-3xl p-8 text-left bg-nutri-neutralBg/50 hover:bg-nutri-neutralBg/80 hover:border-nutri-primary/20 transition-all duration-300 flex flex-col justify-between min-h-[340px]">
                             <div>
-                                <div className="w-11 h-11 bg-nutri-primary/15 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-primary/25 transition">🤖</div>
+                                <div className="w-11 h-11 bg-nutri-primary/15 rounded-2xl flex items-center justify-center text-xl mb-5 group-hover:bg-nutri-primary/25 transition"><Bot className="w-6 h-6 text-nutri-primaryDark" /></div>
                                 <h3 className="text-xl font-bold text-nutri-primaryDark mb-2">Resep Cerdas berbasis AI</h3>
                                 <p className="text-xs text-gray-500 leading-relaxed mb-6">
                                     AI kami merekomendasikan resep MPASI yang disesuaikan dengan usia, riwayat alergi, dan preferensi si Kecil. Tidak pernah kehabisan ide!
@@ -348,15 +349,15 @@ const Home: React.FC = () => {
                             {/* Recipe chips */}
                             <div className="flex flex-wrap gap-2">
                                 {[
-                                    "🍌 Puree Pisang",
-                                    "🥣 Bubur Ayam Sayur",
-                                    "🐄 Sup Krim Sapi",
-                                    "🥑 Alpukat Lembut",
-                                    "🐟 Tim Ikan Bayam",
+                                    "Puree Pisang",
+                                    "Bubur Ayam Sayur",
+                                    "Sup Krim Sapi",
+                                    "Alpukat Lembut",
+                                    "Tim Ikan Bayam",
                                     "+ 99 Lainnya",
                                 ].map((tag) => (
-                                    <span key={tag} className="px-3 py-1.5 bg-white border border-gray-100 rounded-full text-[11px] font-medium text-nutri-primaryDark shadow-sm hover:border-nutri-primary/30 hover:bg-nutri-tertiary/30 transition cursor-pointer">
-                                        {tag}
+                                    <span key={tag} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-100 rounded-full text-[11px] font-medium text-nutri-primaryDark shadow-sm hover:border-nutri-primary/30 hover:bg-nutri-tertiary/30 transition cursor-pointer">
+                                        <CheckCircle className="w-3 h-3 text-nutri-primary" /> {tag}
                                     </span>
                                 ))}
                             </div>
@@ -461,8 +462,8 @@ const Home: React.FC = () => {
                     <div className="absolute -top-12 -left-12 w-44 h-44 bg-nutri-primary/30 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-nutri-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
 
-                    <span className="inline-block px-4 py-1 bg-white/10 text-white text-xs font-bold rounded-full mb-5 border border-white/20">
-                        🎁 Mulai GRATIS, Upgrade Kapan Saja
+                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white/10 text-white text-xs font-bold rounded-full mb-5 border border-white/20">
+                        <Gift className="w-4 h-4" /> Mulai GRATIS, Upgrade Kapan Saja
                     </span>
                     <h2 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight relative">
                         Daftar Sekarang untuk Si Kecil
@@ -558,7 +559,7 @@ const Home: React.FC = () => {
 
                     {/* Bottom bar */}
                     <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-white/40">
-                        <p>© 2026 NutriGrow. All rights reserved. Made with ❤️ for Indonesian families.</p>
+                        <p>© 2026 NutriGrow. All rights reserved. Made with love for Indonesian families.</p>
                         <div className="flex gap-6">
                             <a href="#" className="hover:text-white/70 transition-colors">Terms</a>
                             <a href="#" className="hover:text-white/70 transition-colors">Privacy</a>

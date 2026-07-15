@@ -7,6 +7,8 @@ const Register: React.FC = () => {
     const [name, setName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [role, setRole] = useState<string>('PARENT');
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
     const [errorMsg, setErrorMsg] = useState<string>('');
 
     const auth = useContext(AuthContext);
@@ -17,10 +19,34 @@ const Register: React.FC = () => {
         setErrorMsg('');
         
         try {
-            // tembak endpoint auth register
-            const response = await api.post('/auth/register', { name, email, password });
+            // siapkan data (FormData jika ada file)
+            let dataToSend: any;
+            
+            if (role === 'DOCTOR' || role === 'SELLER') {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('email', email);
+                formData.append('password', password);
+                formData.append('role', role);
+                if (documentFile) {
+                    formData.append('document', documentFile);
+                }
+                dataToSend = formData;
+            } else {
+                dataToSend = { name, email, password, role };
+            }
 
-            if (response.data.token && auth) {
+            // tembak endpoint auth register
+            const response = await api.post('/auth/register', dataToSend, {
+                headers: dataToSend instanceof FormData 
+                    ? { 'Content-Type': 'multipart/form-data' } 
+                    : undefined
+            });
+
+            if (response.data.needsVerification) {
+                alert(response.data.message);
+                navigate('/login');
+            } else if (response.data.token && auth) {
                 // simpan ke state global context 
                 auth.login(response.data.token, response.data.user);
 
@@ -107,6 +133,43 @@ const Register: React.FC = () => {
                                 minLength={6}
                             />
                         </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                Daftar Sebagai
+                            </label>
+                            <select
+                                value={role}
+                                onChange={(e) => { setRole(e.target.value); setDocumentFile(null); }}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-nutri-primary bg-nutri-neutralBg/50 transition text-sm text-gray-700"
+                            >
+                                <option value="PARENT">Orang Tua / Pasien</option>
+                                <option value="DOCTOR">Dokter Spesialis</option>
+                                <option value="SELLER">Mitra Katering</option>
+                            </select>
+                        </div>
+
+                        {(role === 'DOCTOR' || role === 'SELLER') && (
+                            <div className="animate-fade-in">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                    Unggah Dokumen Pendukung (STR/SIP/Izin Usaha)
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setDocumentFile(e.target.files[0]);
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-nutri-primary bg-amber-50 transition text-sm"
+                                    required
+                                />
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                    Unggah file berupa gambar (JPG/PNG) atau PDF. Wajib diisi.
+                                </p>
+                            </div>
+                        )}
 
                         {/* Pesan Error */}
                         {errorMsg && <p className="text-red-500 text-xs font-semibold">{errorMsg}</p>}

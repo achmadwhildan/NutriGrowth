@@ -1,47 +1,56 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { MapPin, Truck, CreditCard, CircleDollarSign, Landmark, Lock } from 'lucide-react';
 import api from '../../services/api';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [shippingMethod, setShippingMethod] = useState('Reguler');
   const [paymentMethod, setPaymentMethod] = useState('GoPay');
+  
+  // Extract product from location state
+  const { product, quantity } = location.state || {};
+
+  useEffect(() => {
+    if (!product) {
+      alert("Tidak ada produk yang dipilih untuk checkout");
+      navigate(-1);
+    }
+  }, [product, navigate]);
+
+  if (!product) return null;
 
   const orderItems = [
-    { id: 1, name: 'Paket MPASI Sehat', variant: 'Variasi 7 Hari', qty: 1, price: 250000, img: 'https://images.unsplash.com/photo-1621084556058-297d26eb4227?auto=format&fit=crop&q=80&w=150', isService: false },
-    { id: 2, name: 'Konsultasi Nutrisi', variant: 'Expert Chat (15 Menit)', qty: 1, price: 75000, img: 'https://cdn-icons-png.flaticon.com/512/2833/2833315.png', isService: true },
+    { 
+      id: product.id, 
+      name: product.name, 
+      variant: product.category, 
+      qty: quantity || 1, 
+      price: parseFloat(product.price || 0), 
+      img: product.imageUrl || 'https://images.unsplash.com/photo-1621084556058-297d26eb4227?auto=format&fit=crop&q=80&w=150', 
+      isService: false 
+    }
   ];
 
-  const subtotal = orderItems.reduce((acc, curr) => acc + curr.price, 0);
+  const subtotal = orderItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
   const shippingCost = shippingMethod === 'Reguler' ? 15000 : 35000;
   const tax = subtotal * 0.11;
   const total = subtotal + shippingCost + tax;
 
-  const handleCheckout = () => {
-    (async () => {
-      try {
-        // cari item produk pertama (bukan service) untuk dikirim ke backend
-        const productItem = orderItems.find(i => !i.isService);
-        if (!productItem) {
-          alert('Tidak ada produk untuk checkout.');
-          return;
-        }
+  const handleCheckout = async () => {
+    try {
+      const response = await api.post('/shop/checkout', {
+        productId: product.id,
+        quantity: quantity || 1
+      });
 
-        // panggil API checkout
-        const response = await api.post('/shop/checkout', {
-          productId: productItem.id,
-          quantity: productItem.qty
-        });
-
-        alert(response.data?.message || 'Pesanan berhasil dibuat!');
-        navigate('/orders');
-      } catch (err: any) {
-        console.error('Checkout error:', err);
-        // fallback ke behaviour lama jika API gagal
-        alert(err?.response?.data?.message || "Pesanan berhasil dibuat!");
-        navigate('/parent-dashboard');
-      }
-    })();
+      alert(response.data?.message || 'Pesanan berhasil dibuat!');
+      navigate('/orders');
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      alert(err?.response?.data?.message || "Gagal memproses checkout.");
+    }
   };
 
   return (
@@ -61,16 +70,15 @@ const Checkout: React.FC = () => {
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-nutri-primaryDark flex items-center gap-2">
-                <span>📍</span> Alamat Pengiriman
+                <MapPin className="w-4 h-4" /> Alamat Pengiriman
               </h3>
               <button className="text-[10px] font-bold text-gray-400 hover:text-nutri-primary transition">Ubah Alamat</button>
             </div>
             <div className="p-4 border border-gray-200 rounded-xl relative">
-              <span className="absolute top-4 right-4 text-xs font-bold text-gray-800">Amanda Rahma</span>
+              <span className="absolute top-4 right-4 text-xs font-bold text-gray-800">Alamat Utama</span>
               <span className="inline-block px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold rounded mb-2">Rumah</span>
               <p className="text-xs text-gray-600 font-medium leading-relaxed max-w-[80%]">
-                Jl. Melati No. 42, Kebayoran Baru, Jakarta Selatan, 12110<br/>
-                (+62)-812-3456-7890
+                Silakan perbarui alamat Anda di pengaturan profil.
               </p>
             </div>
           </div>
@@ -78,7 +86,7 @@ const Checkout: React.FC = () => {
           {/* Metode Pengiriman */}
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
             <h3 className="text-sm font-bold text-nutri-primaryDark flex items-center gap-2 mb-4">
-              <span>🚚</span> Metode Pengiriman
+              <Truck className="w-4 h-4" /> Metode Pengiriman
             </h3>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
@@ -106,7 +114,7 @@ const Checkout: React.FC = () => {
           {/* Metode Pembayaran */}
           <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
             <h3 className="text-sm font-bold text-nutri-primaryDark flex items-center gap-2 mb-6">
-              <span>💳</span> Metode Pembayaran
+              <CreditCard className="w-4 h-4" /> Metode Pembayaran
             </h3>
             
             <div className="space-y-4">
@@ -118,7 +126,7 @@ const Checkout: React.FC = () => {
                       key={m} onClick={() => setPaymentMethod(m)}
                       className={`p-4 border rounded-xl cursor-pointer transition flex items-center justify-center gap-2 ${paymentMethod === m ? 'border-emerald-600 bg-emerald-50/30' : 'border-gray-200'}`}
                     >
-                      <span className="text-lg">💰</span>
+                      <CircleDollarSign className="w-6 h-6 text-gray-500" />
                       <span className="text-xs font-bold text-gray-800">{m}</span>
                       <div className={`absolute top-2 right-2 w-3 h-3 rounded-full border ${paymentMethod === m ? 'border-emerald-600 bg-emerald-600' : 'border-gray-300'}`}></div>
                     </div>
@@ -134,23 +142,11 @@ const Checkout: React.FC = () => {
                       key={m} onClick={() => setPaymentMethod(m)}
                       className={`p-4 border rounded-xl cursor-pointer transition flex items-center justify-center gap-2 ${paymentMethod === m ? 'border-emerald-600 bg-emerald-50/30' : 'border-gray-200'}`}
                     >
-                      <span className="text-lg">🏦</span>
+                      <Landmark className="w-6 h-6 text-gray-500" />
                       <span className="text-xs font-bold text-gray-800">{m}</span>
                       <div className={`absolute top-2 right-2 w-3 h-3 rounded-full border ${paymentMethod === m ? 'border-emerald-600 bg-emerald-600' : 'border-gray-300'}`}></div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Lainnya</p>
-                <div 
-                  onClick={() => setPaymentMethod('Kartu Kredit')}
-                  className={`w-full sm:w-1/2 p-4 border rounded-xl cursor-pointer transition flex items-center justify-center gap-2 ${paymentMethod === 'Kartu Kredit' ? 'border-emerald-600 bg-emerald-50/30' : 'border-gray-200'}`}
-                >
-                  <span className="text-lg">💳</span>
-                  <span className="text-xs font-bold text-gray-800">Kartu Kredit</span>
-                  <div className={`absolute top-2 right-2 w-3 h-3 rounded-full border ${paymentMethod === 'Kartu Kredit' ? 'border-emerald-600 bg-emerald-600' : 'border-gray-300'}`}></div>
                 </div>
               </div>
             </div>
@@ -209,7 +205,7 @@ const Checkout: React.FC = () => {
           </button>
           
           <p className="text-center text-[10px] text-gray-400 mt-4 flex justify-center items-center gap-1 font-medium">
-            <span>🔒</span> Pembayaran Aman & Terenkripsi
+            <Lock className="w-3 h-3" /> Pembayaran Aman & Terenkripsi
           </p>
 
         </aside>

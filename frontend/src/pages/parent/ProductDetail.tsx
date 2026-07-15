@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Star, ShoppingCart, HelpCircle } from 'lucide-react';
 import api from '../../services/api';
 
 // Helper component: fetch products and find by id, then call onLoad
@@ -56,7 +57,7 @@ const ProductDetail: React.FC = () => {
         <div className="w-full md:w-5/12 space-y-4">
             <div className="bg-emerald-800/10 rounded-3xl overflow-hidden aspect-square relative border border-gray-100">
             <span className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-[10px] font-bold text-nutri-primaryDark shadow-sm flex items-center gap-1.5 z-10">
-              <span className="text-nutri-primary">★</span> Recommended
+              <Star className="w-3 h-3 text-nutri-primary fill-nutri-primary" /> Recommended
             </span>
             {loading ? (
               <div className="w-full h-64 flex items-center justify-center text-gray-400">Memuat produk...</div>
@@ -85,7 +86,7 @@ const ProductDetail: React.FC = () => {
           <div className="mb-6 space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-extrabold text-amber-700 uppercase tracking-wider">{product?.category || 'Produk'}</span>
-              <span className="text-orange-400 text-xs">★★★★★</span>
+              <div className="flex gap-0.5 text-orange-400"><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /></div>
               <span className="text-[10px] text-gray-400 font-medium">{product?._reviewsCount || '(belum ada ulasan)'}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-nutri-primaryDark leading-tight">{product?.name || 'Produk Tidak Ditemukan'}</h1>
@@ -102,7 +103,7 @@ const ProductDetail: React.FC = () => {
 
           <div className="bg-emerald-50 border border-emerald-100/50 rounded-2xl p-5 mb-8">
             <h4 className="text-xs font-bold text-emerald-800 flex items-center gap-2 mb-2">
-              <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex justify-center items-center text-[10px]">?</span>
+              <HelpCircle className="w-5 h-5 text-emerald-700" />
               Kenapa ini cocok untuk Aiden?
             </h4>
             <p className="text-[11px] text-emerald-700/80 leading-relaxed font-medium pl-7">
@@ -136,10 +137,10 @@ const ProductDetail: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex gap-4 mt-auto">
             <button className="flex-1 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl text-sm shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-2">
-              <span>🛒</span> Tambah ke Keranjang
+              <ShoppingCart className="w-4 h-4" /> Tambah ke Keranjang
             </button>
             <button 
-              onClick={() => navigate('/checkout')}
+              onClick={() => navigate('/checkout', { state: { product, quantity: 1 } })}
               className="flex-1 py-3.5 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-sm shadow-sm transition"
             >
               Beli Sekarang
@@ -166,7 +167,7 @@ const ProductDetail: React.FC = () => {
                 <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                 <div>
                   <h4 className="text-[11px] font-bold text-gray-800">{u.n}</h4>
-                  <div className="text-orange-400 text-[10px]">★★★★★</div>
+                  <div className="flex gap-0.5 text-orange-400 mt-1"><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /><Star className="w-3 h-3 fill-orange-400" /></div>
                 </div>
               </div>
               <p className="text-[11px] text-gray-600 italic">"{u.r}"</p>

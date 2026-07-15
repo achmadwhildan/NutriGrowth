@@ -6,6 +6,7 @@ interface PendingSeller {
     name: string;
     email: string;
     phoneNumber?: string;
+    documentUrl?: string;
     createdAt: string;
 }
 
@@ -99,7 +100,11 @@ const SellerVerification: React.FC = () => {
                                     <td className="p-4 text-sm text-gray-600">{seller.phoneNumber || '-'}</td>
                                     <td className="p-4 text-sm text-gray-600">{formatDate(seller.createdAt)}</td>
                                     <td className="p-4">
-                                        <button className="text-nutri-primary hover:underline text-sm font-medium">Lihat Izin Usaha</button>
+                                        {seller.documentUrl ? (
+                                            <a href={seller.documentUrl} target="_blank" rel="noopener noreferrer" className="text-nutri-primary hover:underline text-sm font-medium">Lihat Izin Usaha</a>
+                                        ) : (
+                                            <span className="text-gray-400 text-sm italic">Tidak ada</span>
+                                        )}
                                     </td>
                                     <td className="p-4 text-right space-x-2">
                                         <button

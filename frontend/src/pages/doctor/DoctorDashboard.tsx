@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell, Calendar, Star, Hand } from 'lucide-react';
 
 const DoctorDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -9,28 +10,28 @@ const DoctorDashboard: React.FC = () => {
             
             {/* Header / Welcome */}
             <div>
-                <h1 className="text-2xl font-extrabold text-gray-800">Selamat datang, Dr. Maya! 👋</h1>
+                <h1 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">Selamat datang, Dr. Maya! <Hand className="w-6 h-6 text-yellow-500" /></h1>
                 <p className="text-sm text-gray-500 mt-1">Berikut adalah ringkasan jadwal dan permintaan konsultasi Anda hari ini.</p>
             </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-nutri-tertiary text-nutri-primaryDark rounded-full flex items-center justify-center text-xl">📅</div>
+                    <div className="w-12 h-12 bg-nutri-tertiary text-nutri-primaryDark rounded-full flex items-center justify-center"><Calendar className="w-6 h-6" /></div>
                     <div>
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Konsultasi Hari Ini</p>
                         <p className="text-2xl font-extrabold text-gray-800">4 <span className="text-sm font-medium text-gray-400">pasien</span></p>
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-orange-50 text-nutri-secondary rounded-full flex items-center justify-center text-xl">🔔</div>
+                    <div className="w-12 h-12 bg-orange-50 text-nutri-secondary rounded-full flex items-center justify-center"><Bell className="w-6 h-6" /></div>
                     <div>
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Permintaan Baru</p>
                         <p className="text-2xl font-extrabold text-gray-800">2 <span className="text-sm font-medium text-gray-400">menunggu</span></p>
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">⭐</div>
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center"><Star className="w-6 h-6" /></div>
                     <div>
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Rating Rata-rata</p>
                         <p className="text-2xl font-extrabold text-gray-800">4.9 <span className="text-sm font-medium text-gray-400">/ 5.0</span></p>

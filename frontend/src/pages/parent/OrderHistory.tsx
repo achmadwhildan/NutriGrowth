@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Hourglass, RefreshCw, Truck, CheckCircle2, XCircle, Check, Package, UtensilsCrossed } from 'lucide-react';
 import api from '../../services/api';
 
 interface OrderItem {
@@ -12,46 +13,15 @@ interface OrderItem {
     imageUrl?: string;
 }
 
-const statusConfig: Record<OrderItem['status'], { label: string; color: string; icon: string }> = {
-    PENDING: { label: 'Menunggu Konfirmasi', color: 'bg-yellow-100 text-yellow-700', icon: '⏳' },
-    PROCESSING: { label: 'Sedang Diproses', color: 'bg-blue-100 text-blue-700', icon: '🔄' },
-    DELIVERING: { label: 'Dalam Pengiriman', color: 'bg-purple-100 text-purple-700', icon: '🚚' },
-    COMPLETED: { label: 'Selesai', color: 'bg-green-100 text-green-700', icon: '✅' },
-    CANCELLED: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700', icon: '❌' },
+const statusConfig: Record<OrderItem['status'], { label: string; color: string; icon: React.ReactNode }> = {
+    PENDING: { label: 'Menunggu Konfirmasi', color: 'bg-yellow-100 text-yellow-700', icon: <Hourglass className="w-4 h-4" /> },
+    PROCESSING: { label: 'Sedang Diproses', color: 'bg-blue-100 text-blue-700', icon: <RefreshCw className="w-4 h-4" /> },
+    DELIVERING: { label: 'Dalam Pengiriman', color: 'bg-purple-100 text-purple-700', icon: <Truck className="w-4 h-4" /> },
+    COMPLETED: { label: 'Selesai', color: 'bg-green-100 text-green-700', icon: <CheckCircle2 className="w-4 h-4" /> },
+    CANCELLED: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700', icon: <XCircle className="w-4 h-4" /> },
 };
 
-const DUMMY_ORDERS: OrderItem[] = [
-    {
-        id: 'ORD001',
-        productName: 'Paket MPASI Sehat Lengkap (7 Hari)',
-        sellerName: 'Katering Bunda Ceria',
-        quantity: 1,
-        totalPrice: 350000,
-        status: 'DELIVERING',
-        createdAt: '2026-06-25T09:00:00Z',
-        imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300',
-    },
-    {
-        id: 'ORD002',
-        productName: 'Bubur Ayam Sayur Premium (5 Porsi)',
-        sellerName: 'Dapur Sehat Aini',
-        quantity: 2,
-        totalPrice: 120000,
-        status: 'COMPLETED',
-        createdAt: '2026-06-20T14:00:00Z',
-        imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&q=80&w=300',
-    },
-    {
-        id: 'ORD003',
-        productName: 'Puding Susu Pisang (10 Cup)',
-        sellerName: 'Katering Bunda Ceria',
-        quantity: 1,
-        totalPrice: 85000,
-        status: 'PENDING',
-        createdAt: '2026-06-28T18:00:00Z',
-        imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=300',
-    },
-];
+// Removed DUMMY_ORDERS
 
 const OrderHistory: React.FC = () => {
     const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -89,8 +59,7 @@ const OrderHistory: React.FC = () => {
                 setOrders(mapped);
             } catch (error) {
                 console.error('Gagal memuat riwayat pesanan:', error);
-                // fallback ke data dummy jika API gagal
-                setOrders(DUMMY_ORDERS);
+                // no fallback, just log error
             } finally {
                 setLoading(false);
             }
@@ -120,7 +89,7 @@ const OrderHistory: React.FC = () => {
                     <React.Fragment key={step}>
                         <div className={`flex items-center gap-1`}>
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold border-2 transition-all ${i <= currentIndex ? 'bg-nutri-primary border-nutri-primary text-white' : 'bg-white border-gray-200 text-gray-400'}`}>
-                                {i < currentIndex ? '✓' : i + 1}
+                                {i < currentIndex ? <Check className="w-3 h-3" /> : i + 1}
                             </div>
                         </div>
                         {i < steps.length - 1 && (
@@ -173,7 +142,9 @@ const OrderHistory: React.FC = () => {
                     ))
                 ) : filteredOrders.length === 0 ? (
                     <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                        <div className="text-5xl mb-4">📦</div>
+                        <div className="flex justify-center mb-4 text-gray-300">
+                            <Package className="w-16 h-16" strokeWidth={1.5} />
+                        </div>
                         <h3 className="font-bold text-gray-900">Belum Ada Pesanan</h3>
                         <p className="text-gray-500 text-sm mt-2">Pesanan yang Anda buat akan muncul di sini.</p>
                     </div>
@@ -187,7 +158,7 @@ const OrderHistory: React.FC = () => {
                                     <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                                         {order.imageUrl 
                                             ? <img src={order.imageUrl} alt={order.productName} className="w-full h-full object-cover" />
-                                            : <div className="w-full h-full flex items-center justify-center text-2xl">🍱</div>
+                                            : <div className="w-full h-full flex items-center justify-center text-gray-300"><UtensilsCrossed className="w-8 h-8" /></div>
                                         }
                                     </div>
 

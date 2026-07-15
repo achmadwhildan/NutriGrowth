@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Scale, Plus, CheckCircle, TrendingUp, ArrowRight, ShoppingCart, UtensilsCrossed, X } from 'lucide-react';
 import api from '../../services/api';
 import { Child } from '../../types';
 
@@ -123,9 +124,9 @@ const ParentDashboard: React.FC = () => {
                     className="w-full sm:w-auto px-5 py-2.5 bg-nutri-secondary hover:bg-opacity-90 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
                 >
                     {activeChild ? (
-                        <><span>⚖️</span> Timbang Sekarang</>
+                        <><Scale className="w-4 h-4" /> Timbang Sekarang</>
                     ) : (
-                        <><span>➕</span> Buat Profil Anak</>
+                        <><Plus className="w-4 h-4" /> Buat Profil Anak</>
                     )}
                 </button>
             </div>
@@ -163,11 +164,11 @@ const ParentDashboard: React.FC = () => {
                             "{childData.insight}"
                         </div>
                         <div className="flex flex-wrap gap-2 text-[11px] font-bold">
-                            <span className="px-3 py-1.5 bg-nutri-tertiary text-nutri-primaryDark rounded-full">✓ Tinggi Normal</span>
-                            <span className="px-3 py-1.5 bg-nutri-secondary/20 text-orange-600 rounded-full">📈 Perlu Optimasi Berat</span>
+                            <span className="px-3 py-1.5 bg-nutri-tertiary text-nutri-primaryDark rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Tinggi Normal</span>
+                            <span className="px-3 py-1.5 bg-nutri-secondary/20 text-orange-600 rounded-full flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Perlu Optimasi Berat</span>
                         </div>
                         <Link to="/child-development" className="inline-flex items-center text-xs font-bold text-nutri-primaryDark hover:underline pt-2 gap-1">
-                            Lihat Grafik Lengkap <span className="text-sm">→</span>
+                            Lihat Grafik Lengkap <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
 
@@ -179,7 +180,9 @@ const ParentDashboard: React.FC = () => {
                 <h3 className="text-sm font-bold text-nutri-primaryDark uppercase tracking-wider">Rekomendasi Berbelanja</h3>
                 {products.length === 0 ? (
                     <div className="bg-white rounded-3xl border border-gray-100 p-8 text-center shadow-sm">
-                        <p className="text-4xl mb-3">🛒</p>
+                        <div className="flex justify-center mb-4 text-gray-300">
+                            <ShoppingCart className="w-12 h-12" />
+                        </div>
                         <p className="text-sm text-gray-500">Belum ada produk tersedia.</p>
                         <p className="text-xs text-gray-400 mt-1">Admin dapat menambahkan produk melalui halaman Admin Panel.</p>
                     </div>
@@ -191,8 +194,8 @@ const ParentDashboard: React.FC = () => {
                                     {product.imageUrl ? (
                                         <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl bg-nutri-tertiary/30">
-                                            🍱
+                                        <div className="w-full h-full flex items-center justify-center bg-nutri-tertiary/30 text-nutri-primaryDark">
+                                            <UtensilsCrossed className="w-8 h-8" />
                                         </div>
                                     )}
                                     <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[9px] font-extrabold text-nutri-primaryDark px-2 py-1 rounded-md uppercase tracking-wider">
@@ -214,7 +217,7 @@ const ParentDashboard: React.FC = () => {
                                             to={`/products/${product.id}`}
                                             className="text-[11px] font-bold text-nutri-primary hover:underline"
                                         >
-                                            Lihat Detail →
+                                            Lihat Detail <ArrowRight className="w-3 h-3 inline ml-1" />
                                         </Link>
                                     </div>
                                 </div>
@@ -232,7 +235,7 @@ const ParentDashboard: React.FC = () => {
                             onClick={() => setIsModalOpen(false)}
                             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition"
                         >
-                            ✕
+                            <X className="w-5 h-5" />
                         </button>
                         <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">Timbang Sekarang</h3>
                         <p className="text-xs text-gray-500 mb-6">Masukkan data tinggi dan berat badan terbaru {childData.name !== 'Belum ada profil anak' ? childData.name : 'anak'}.</p>
@@ -287,7 +290,7 @@ const ParentDashboard: React.FC = () => {
                             onClick={() => setIsAddChildModalOpen(false)}
                             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition"
                         >
-                            ✕
+                            <X className="w-5 h-5" />
                         </button>
                         <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">Buat Profil Anak</h3>
                         <p className="text-xs text-gray-500 mb-6">Masukkan data diri anak Anda untuk memulai.</p>

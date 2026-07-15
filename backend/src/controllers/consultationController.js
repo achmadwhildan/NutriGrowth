@@ -26,7 +26,18 @@ export const sendMessage = async (req, res) => {
         const { consultationId } = req.params;
         const { text } = req.body || {};
 
-        if (!text || !text.trim()) return res.status(400).json({ message: 'Pesan tidak boleh kosong' });
+        let attachmentUrl = null;
+        let attachmentType = null;
+        
+        if (req.file) {
+            attachmentUrl = `/uploads/${req.file.filename}`;
+            const mimetype = req.file.mimetype;
+            attachmentType = mimetype.startsWith('image/') ? 'image' : 'document';
+        }
+
+        if ((!text || !text.trim()) && !attachmentUrl) {
+            return res.status(400).json({ message: 'Pesan atau lampiran tidak boleh kosong' });
+        }
 
         const consultation = await prisma.consultation.findUnique({ where: { id: consultationId }, include: { doctor: true } });
         if (!consultation) return res.status(404).json({ message: 'Konsultasi tidak ditemukan' });
@@ -39,7 +50,9 @@ export const sendMessage = async (req, res) => {
                 consultationId,
                 senderId: req.user.id,
                 senderRole: req.user.role,
-                text: text.trim(),
+                text: text ? text.trim() : null,
+                attachmentUrl,
+                attachmentType
             }
         });
 
@@ -90,7 +103,18 @@ export const getMyConsultations = async (req, res) => {
             
             consults = await prisma.consultation.findMany({ 
                 where: { doctorId: doctor.id }, 
-                include: { user: true, doctor: true }, 
+                include: { 
+                    user: {
+                        include: {
+                            children: {
+                                include: {
+                                    growthLogs: { orderBy: { measurementDate: 'desc' } }
+                                }
+                            }
+                        }
+                    }, 
+                    doctor: true 
+                }, 
                 orderBy: { createdAt: 'desc' } 
             });
         } else {
