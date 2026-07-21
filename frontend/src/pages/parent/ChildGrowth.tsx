@@ -3,6 +3,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import { RefreshCw, Plus, Activity, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 import { Child } from '../../types';
+import { getWhoIdealValue } from '../../utils/whoStandards';
 
 interface GrowthLog {
     id: string;
@@ -102,11 +103,23 @@ const ChildGrowth: React.FC = () => {
   };
 
   // Convert logs to chart format (oldest first)
-  const growthData = [...logs].reverse().map(log => ({
-      name: formatMonth(log.createdAt),
-      Aiden: activeTab === 'berat' ? log.weight : log.height,
-      WHOIdeal: activeTab === 'berat' ? (log.weight * 1.1).toFixed(1) : (log.height * 1.05).toFixed(1) // dummy WHO ideal line based on value
-  }));
+  const growthData = [...logs].reverse().map(log => {
+      let ageInMonths = 0;
+      if (activeChild?.birthDate) {
+          const birthDate = new Date(activeChild.birthDate);
+          const measureDate = new Date(log.createdAt);
+          const diffMonths = (measureDate.getFullYear() - birthDate.getFullYear()) * 12 + (measureDate.getMonth() - birthDate.getMonth());
+          ageInMonths = diffMonths > 0 ? diffMonths : 0;
+      }
+      
+      const whoValue = getWhoIdealValue(ageInMonths, activeChild?.gender || 'L', activeTab === 'berat' ? 'weight' : 'height');
+
+      return {
+          name: formatMonth(log.createdAt),
+          Aiden: activeTab === 'berat' ? log.weight : log.height,
+          WHOIdeal: whoValue
+      };
+  });
 
   const historyLogs = logs.map(log => {
       const statusDisplay = getStatusDisplay(log.zScoreStatus);

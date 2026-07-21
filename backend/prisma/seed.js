@@ -2,340 +2,190 @@ import prisma from '../src/config/prisma.js';
 import bcrypt from 'bcrypt';
 
 async function main() {
-  console.log('Checking existing database records...');
-  const existingUserCount = await prisma.user.count();
+  console.log('Starting seeder...');
 
-  if (existingUserCount > 0) {
-    console.log('Database already contains data. Skipping seed to avoid overwriting existing records.');
-    return;
-  }
+  // Hapus semua data yang ada sebelumnya (untuk menghindari bentrok ID)
+  // Cascade delete seharusnya menangani relasi
+  await prisma.chatMessage.deleteMany({});
+  await prisma.consultation.deleteMany({});
+  await prisma.orderItem.deleteMany({});
+  await prisma.order.deleteMany({});
+  await prisma.product.deleteMany({});
+  await prisma.doctorSchedule.deleteMany({});
+  await prisma.growthLog.deleteMany({});
+  await prisma.child.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.doctor.deleteMany({});
+  await prisma.user.deleteMany({});
 
-  console.log('No existing users found. Starting seeding...');
-
-  // Hash passwords
   const passwordHash = await bcrypt.hash('password123', 10);
 
-  // 1. Create Users
+  // 1. Buat User Admin
   const admin = await prisma.user.create({
     data: {
-      name: 'Admin NutriGrow',
-      email: 'admin@nutrigrow.com',
+      name: 'Admin NutriGrowth',
+      email: 'admin@nutrigrowth.com',
       password: passwordHash,
       role: 'ADMIN',
-      phoneNumber: '081234567890',
-      address: 'Kantor Pusat NutriGrow, Jakarta',
-    },
+      isVerified: true
+    }
   });
 
-  const parent1 = await prisma.user.create({
-    data: {
-      name: 'Budi Santoso',
-      email: 'budi@gmail.com',
-      password: passwordHash,
-      role: 'PARENT',
-      phoneNumber: '081234567891',
-      address: 'Jl. Melati No. 12, Bandung',
-    },
-  });
-
-  const parent2 = await prisma.user.create({
-    data: {
-      name: 'Siti Rahma',
-      email: 'siti@gmail.com',
-      password: passwordHash,
-      role: 'PARENT',
-      phoneNumber: '081234567892',
-      address: 'Jl. Mawar No. 45, Surabaya',
-    },
-  });
-
+  // 2. Buat User Seller
   const seller = await prisma.user.create({
     data: {
       name: 'Toko Nutrisi Sehat',
-      email: 'seller@nutrigrow.com',
+      email: 'seller@nutrigrowth.com',
       password: passwordHash,
       role: 'SELLER',
-      phoneNumber: '081234567893',
-      address: 'Ruko Hijau Indah Blok C, Tangerang',
-    },
+      isVerified: true,
+      address: 'Jl. Sehat Raya No 10, Jakarta'
+    }
   });
 
-  console.log('Users created.');
-
-  // 2. Create Children for Budi & Siti
-  const child1 = await prisma.child.create({
+  // 3. Buat User Dokter
+  const doctorUser = await prisma.user.create({
     data: {
-      userId: parent1.id,
-      name: 'Andi Santoso',
-      gender: 'L',
-      birthDate: new Date('2024-05-15'),
-      birthWeight: 3.2,
-      birthHeight: 49.0,
-    },
+      name: 'Dr. Sarah Setiawan, Sp.A',
+      email: 'doctor@nutrigrowth.com',
+      password: passwordHash,
+      role: 'DOCTOR',
+      isVerified: true,
+      phoneNumber: '081234567890'
+    }
   });
 
-  const child2 = await prisma.child.create({
+  const doctorProfile = await prisma.doctor.create({
     data: {
-      userId: parent1.id,
-      name: 'Anisa Santoso',
-      gender: 'P',
-      birthDate: new Date('2025-01-10'),
-      birthWeight: 2.9,
-      birthHeight: 47.5,
-    },
-  });
-
-  const child3 = await prisma.child.create({
-    data: {
-      userId: parent2.id,
-      name: 'Rian Rahma',
-      gender: 'L',
-      birthDate: new Date('2023-10-20'),
-      birthWeight: 3.4,
-      birthHeight: 50.0,
-    },
-  });
-
-  console.log('Children created.');
-
-  // 3. Create Growth Logs (Catatan Tumbuh Kembang)
-  await prisma.growthLog.createMany({
-    data: [
-      {
-        childId: child1.id,
-        measurementDate: new Date('2024-06-15'),
-        weight: 4.1,
-        height: 52.5,
-        headCircumference: 36.5,
-        zScoreStatus: 'NORMAL',
-        note: 'Perkembangan bulan ke-1 sangat baik, ASI eksklusif lancar.',
-      },
-      {
-        childId: child1.id,
-        measurementDate: new Date('2024-07-15'),
-        weight: 5.0,
-        height: 55.0,
-        headCircumference: 38.0,
-        zScoreStatus: 'NORMAL',
-        note: 'Berat badan naik stabil.',
-      },
-      {
-        childId: child1.id,
-        measurementDate: new Date('2024-08-15'),
-        weight: 5.8,
-        height: 57.5,
-        headCircumference: 39.5,
-        zScoreStatus: 'NORMAL',
-        note: 'Anak aktif bergerak dan mulai belajar tengkurap.',
-      },
-      {
-        childId: child1.id,
-        measurementDate: new Date('2024-09-15'),
-        weight: 6.4,
-        height: 59.0,
-        headCircumference: 40.5,
-        zScoreStatus: 'RISK',
-        note: 'Kenaikan berat badan melambat, perlu pemantauan porsi makan ibu menyusui.',
-      },
-    ],
-  });
-
-  await prisma.growthLog.createMany({
-    data: [
-      {
-        childId: child3.id,
-        measurementDate: new Date('2023-11-20'),
-        weight: 4.3,
-        height: 53.0,
-        headCircumference: 37.0,
-        zScoreStatus: 'NORMAL',
-        note: 'Bayi sehat dan aktif.',
-      },
-      {
-        childId: child3.id,
-        measurementDate: new Date('2023-12-20'),
-        weight: 5.2,
-        height: 56.2,
-        headCircumference: 38.5,
-        zScoreStatus: 'NORMAL',
-        note: 'Perkembangan sesuai usia.',
-      },
-    ],
-  });
-
-  console.log('Growth logs created.');
-
-  // 4. Create Doctors
-  const doctor1 = await prisma.doctor.create({
-    data: {
-      name: 'Dr. Sp.A. Budi Darmawan',
-      specialization: 'Spesialis Anak (Nutrisi & Tumbuh Kembang)',
+      userId: doctorUser.id,
+      name: doctorUser.name,
+      specialization: 'Dokter Anak',
       pricePerSession: 150000.00,
       isActive: true,
-    },
+      bio: 'Dokter Sarah adalah spesialis anak dengan pengalaman lebih dari 10 tahun di bidang gizi dan tumbuh kembang balita.',
+      education: 'S1 Kedokteran UI, Sp.A UI',
+      expertise: 'Gizi Anak, Tumbuh Kembang, Imunisasi',
+      photoUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300'
+    }
   });
 
-  const doctor2 = await prisma.doctor.create({
+  // Buat jadwal untuk dokter
+  await prisma.doctorSchedule.createMany({
+    data: [
+      { doctorId: doctorProfile.id, dayOfWeek: 'Senin', times: ['09:00', '10:00', '13:00'] },
+      { doctorId: doctorProfile.id, dayOfWeek: 'Selasa', times: ['09:00', '11:00'] },
+      { doctorId: doctorProfile.id, dayOfWeek: 'Kamis', times: ['14:00', '15:00', '16:00'] }
+    ]
+  });
+
+  // 4. Buat User Parent
+  const parent = await prisma.user.create({
     data: {
-      name: 'Dr. Sp.A. Maria Lestari',
-      specialization: 'Spesialis Anak (Alergi & Imunologi)',
-      pricePerSession: 180000.00,
-      isActive: true,
-    },
+      name: 'Budi Santoso',
+      email: 'parent@nutrigrowth.com',
+      password: passwordHash,
+      role: 'PARENT',
+      isVerified: true,
+      address: 'Jl. Merdeka No 45, Bandung',
+      phoneNumber: '089876543210'
+    }
   });
 
-  const doctor3 = await prisma.doctor.create({
+  // Buat Data Anak
+  const child = await prisma.child.create({
     data: {
-      name: 'Dr. Sp.A. Ahmad Fauzi',
-      specialization: 'Spesialis Anak Umum',
-      pricePerSession: 120000.00,
-      isActive: false,
-    },
+      userId: parent.id,
+      name: 'Bima Santoso',
+      gender: 'L',
+      birthDate: new Date('2023-01-15T00:00:00.000Z'),
+      birthWeight: 3.2,
+      birthHeight: 50.0
+    }
   });
 
-  console.log('Doctors created.');
-
-  // 5. Create Consultations
-  await prisma.consultation.create({
-    data: {
-      userId: parent1.id,
-      doctorId: doctor1.id,
-      scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      status: 'PAID',
-    },
+  // Buat riwayat pertumbuhan
+  await prisma.growthLog.createMany({
+    data: [
+      { childId: child.id, measurementDate: new Date('2023-02-15'), weight: 4.5, height: 55, zScoreStatus: 'NORMAL' },
+      { childId: child.id, measurementDate: new Date('2023-04-15'), weight: 6.0, height: 61, zScoreStatus: 'NORMAL' },
+      { childId: child.id, measurementDate: new Date('2023-07-15'), weight: 7.5, height: 68, zScoreStatus: 'NORMAL' },
+      { childId: child.id, measurementDate: new Date('2024-01-15'), weight: 9.8, height: 75, zScoreStatus: 'NORMAL' }
+    ]
   });
 
-  await prisma.consultation.create({
-    data: {
-      userId: parent2.id,
-      doctorId: doctor2.id,
-      scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-      status: 'PENDING',
+  // 5. Buat Produk
+  const products = [
+    {
+      name: 'Susu Formula Bayi 0-6 Bulan',
+      description: 'Susu formula lengkap gizi untuk awal kehidupan.',
+      category: 'Susu Formula',
+      price: 120000.00,
+      stock: 50,
+      imageUrl: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&q=80&w=300'
     },
-  });
+    {
+      name: 'Bubur Bayi Organik Rasa Pisang',
+      description: 'MPASI organik untuk bayi usia 6 bulan ke atas.',
+      category: 'MPASI',
+      price: 45000.00,
+      stock: 100,
+      imageUrl: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&q=80&w=300'
+    },
+    {
+      name: 'Vitamin D Drops Bayi',
+      description: 'Suplemen vitamin D untuk tulang sehat.',
+      category: 'Suplemen',
+      price: 85000.00,
+      stock: 30,
+      imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=300'
+    }
+  ];
 
-  console.log('Consultations created.');
-
-  // 7a. Create Chat Messages for consultations
-  console.log('Seeding chat messages for consultations...');
-  // fetch consultations we just created
-  const consults = await prisma.consultation.findMany({ where: { userId: { in: [parent1.id, parent2.id] } }, orderBy: { createdAt: 'asc' } });
-  if (consults.length > 0) {
-    const c1 = consults[0];
-    const c2 = consults[1];
-
-    await prisma.chatMessage.createMany({
-      data: [
-        {
-          consultationId: c1.id,
-          senderId: parent1.id,
-          senderRole: 'PARENT',
-          text: 'Halo Dok, saya ingin konsultasi mengenai perkembangan berat badan anak saya.',
-          isRead: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        },
-        {
-          consultationId: c1.id,
-          senderId: null,
-          senderRole: 'DOCTOR',
-          text: 'Halo Budi, tentu. Bisa ceritakan lebih detail mengenai pola makan dan frekuensi menyusu?',
-          isRead: true,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 23),
-        },
-        {
-          consultationId: c1.id,
-          senderId: parent1.id,
-          senderRole: 'PARENT',
-          text: 'Anak biasanya menyusu 6-7 kali sehari dan mulai MPASI sedikit demi sedikit.',
-          isRead: false,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 22),
-        },
-
-        // messages for second consultation
-        {
-          consultationId: c2.id,
-          senderId: parent2.id,
-          senderRole: 'PARENT',
-          text: 'Dok, apakah saya perlu khawatir jika anak saya belum tumbuh sesuai kurva?',
-          isRead: false,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20),
-        },
-        {
-          consultationId: c2.id,
-          senderId: null,
-          senderRole: 'DOCTOR',
-          text: 'Mari kita cek riwayat pertumbuhan dan jadwalkan pemeriksaan bila diperlukan.',
-          isRead: false,
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 19),
-        },
-      ],
-    });
+  for (const prod of products) {
+    await prisma.product.create({ data: prod });
   }
 
-  // 6. Create Products
-  const prod1 = await prisma.product.create({
+  // Ambil salah satu produk untuk order dummy
+  const allProducts = await prisma.product.findMany();
+  const sampleProduct = allProducts[0];
+
+  // 6. Buat Contoh Pesanan (Order)
+  const order = await prisma.order.create({
     data: {
-      name: 'Suku Formula SGM Eksplor 1+',
-      description: 'Susu pertumbuhan untuk anak usia 1-3 tahun untuk mendukung nutrisi lengkap dan tumbuh kembang buah hati Anda.',
-      category: 'Susu Anak',
-      price: 95000.00,
-      stock: 50,
-      imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=300',
-    },
+      userId: parent.id,
+      totalAmount: 120000.00,
+      shippingAddress: 'Jl. Merdeka No 45, Bandung',
+      status: 'PENDING',
+      items: {
+        create: [
+          {
+            productId: sampleProduct.id,
+            quantity: 1,
+            priceAtPurchase: sampleProduct.price
+          }
+        ]
+      }
+    }
   });
 
-  const prod2 = await prisma.product.create({
+  // 7. Buat Contoh Konsultasi
+  const consultation = await prisma.consultation.create({
     data: {
-      name: 'Bubur Bayi Milna Beras Merah',
-      description: 'Bubur bayi pendamping ASI (MPASI) rasa beras merah lezat kaya akan zat besi, kalsium, dan vitamin lengkap.',
-      category: 'Makanan Bayi',
-      price: 22000.00,
-      stock: 100,
-      imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=300',
-    },
+      userId: parent.id,
+      doctorId: doctorProfile.id,
+      scheduledAt: new Date(Date.now() + 86400000), // besok
+      status: 'ONGOING'
+    }
   });
 
-  const prod3 = await prisma.product.create({
-    data: {
-      name: 'Multivitamin Anak Scott\'s Emulsion',
-      description: 'Minyak hati ikan kod rasa jeruk untuk mendukung daya tahan tubuh anak, pertumbuhan tulang, serta perkembangan otak.',
-      category: 'Suplemen',
-      price: 68000.00,
-      stock: 30,
-      imageUrl: 'https://images.unsplash.com/photo-1626816585974-7ee1a8ad0901?q=80&w=300',
-    },
-  });
-
-  console.log('Products created.');
-
-  // 7. Create Orders & OrderItems
-  const order1 = await prisma.order.create({
-    data: {
-      userId: parent1.id,
-      totalAmount: 163000.00,
-      shippingAddress: 'Jl. Melati No. 12, Bandung',
-      status: 'PROCESSING',
-    },
-  });
-
-  await prisma.orderItem.createMany({
+  await prisma.chatMessage.createMany({
     data: [
-      {
-        orderId: order1.id,
-        productId: prod1.id,
-        quantity: 1,
-        priceAtPurchase: 95000.00,
-      },
-      {
-        orderId: order1.id,
-        productId: prod3.id,
-        quantity: 1,
-        priceAtPurchase: 68000.00,
-      },
-    ],
+      { consultationId: consultation.id, senderRole: 'PARENT', senderId: parent.id, text: 'Halo dok, saya ingin konsultasi berat badan anak.', isRead: true, createdAt: new Date(Date.now() - 3600000) },
+      { consultationId: consultation.id, senderRole: 'DOCTOR', senderId: doctorProfile.id, text: 'Halo Bapak/Ibu, silakan. Ada yang bisa saya bantu?', isRead: true, createdAt: new Date(Date.now() - 3500000) }
+    ]
   });
 
-  console.log('Orders created.');
+  console.log('Seeder completed successfully!');
 }
 
 main()

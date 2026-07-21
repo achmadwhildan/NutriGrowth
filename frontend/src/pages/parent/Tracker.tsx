@@ -185,6 +185,36 @@ const Tracker: React.FC = () => {
                         )) : <p className="text-sm text-gray-400">Belum ada riwayat data.</p>}
                     </div>
                 )}
+
+                {activeSubMenu === 'switcher' && (
+                    <div className="space-y-6 animate-fade-in">
+                        <div className="text-center space-y-1 mb-8">
+                            <h2 className="text-2xl font-extrabold text-nutri-primaryDark">Profile Switcher</h2>
+                            <p className="text-xs text-gray-400">Pilih profil anak yang ingin Anda pantau pertumbuhannya.</p>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {children.map(c => (
+                                <div 
+                                    key={c.id} 
+                                    onClick={() => {
+                                        setActiveChildId(c.id);
+                                        setActiveSubMenu('timbang');
+                                    }}
+                                    className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center gap-4 ${activeChildId === c.id ? 'border-nutri-primary bg-nutri-primary/5 shadow-md' : 'border-gray-100 bg-white hover:border-nutri-primary/30 hover:bg-gray-50'}`}
+                                >
+                                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0">
+                                        <img src={c.imageUrl || 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=150'} alt={c.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-nutri-primaryDark text-lg">{c.name}</h3>
+                                        <p className="text-xs text-gray-500 font-medium">Lahir: {new Date(c.birthDate).toLocaleDateString('id-ID')}</p>
+                                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">{c.gender === 'L' ? 'Laki-Laki' : 'Perempuan'}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </section>
         </div>
     );

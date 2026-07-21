@@ -124,3 +124,107 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).json({ message: "Gagal memperbarui status pesanan", error: error.message });
     }
 };
+
+// Simulasi real-time tracking resi
+export const getOrderTracking = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await prisma.order.findUnique({
+            where: { id: orderId }
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: "Pesanan tidak ditemukan!" });
+        }
+
+        // Mock tracking data based on order status
+        const trackingHistory = [];
+        const baseDate = order.createdAt.getTime();
+        
+        trackingHistory.push({
+            time: new Date(baseDate).toISOString(),
+            description: "Pesanan dibuat",
+            status: "PENDING"
+        });
+
+        if (order.status !== 'PENDING' && order.status !== 'CANCELLED') {
+            trackingHistory.push({
+                time: new Date(baseDate + 1000 * 60 * 30).toISOString(), // +30 mins
+                description: "Pesanan sedang diproses penjual",
+                status: "PROCESSING"
+            });
+        }
+
+        if (order.status === 'DELIVERING' || order.status === 'COMPLETED') {
+            trackingHistory.push({
+                time: new Date(baseDate + 1000 * 60 * 60 * 2).toISOString(), // +2 hours
+                description: "Paket telah diserahkan ke kurir",
+                status: "DELIVERING"
+            });
+            trackingHistory.push({
+                time: new Date(baseDate + 1000 * 60 * 60 * 4).toISOString(), // +4 hours
+                description: "Paket sedang dalam perjalanan ke alamat tujuan",
+                status: "DELIVERING"
+            });
+        }
+
+        if (order.status === 'COMPLETED') {
+            trackingHistory.push({
+                time: new Date(baseDate + 1000 * 60 * 60 * 24).toISOString(), // +1 day
+                description: "Paket telah diterima dengan baik",
+                status: "COMPLETED"
+            });
+        }
+
+        // Reverse to show latest first
+        trackingHistory.reverse();
+
+        res.status(200).json({
+            message: "Berhasil mendapatkan riwayat pelacakan",
+            data: trackingHistory
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Gagal mendapatkan pelacakan", error: error.message });
+    }
+};
+
+// Upload bukti pembayaran
+export const uploadPaymentProof = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const userId = req.user.id;
+
+        const order = await prisma.order.findUnique({
+            where: { id: orderId }
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: "Pesanan tidak ditemukan!" });
+        }
+
+        if (order.userId !== userId) {
+            return res.status(403).json({ message: "Tidak memiliki akses ke pesanan ini" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "File bukti pembayaran wajib diunggah" });
+        }
+
+        const paymentProofUrl = `/uploads/${req.file.filename}`;
+
+        const updatedOrder = await prisma.order.update({
+            where: { id: orderId },
+            data: { 
+                paymentProofUrl,
+            }
+        });
+
+        res.status(200).json({
+            message: "Bukti pembayaran berhasil diunggah",
+            data: updatedOrder
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Gagal mengunggah bukti pembayaran", error: error.message });
+    }
+};

@@ -11,6 +11,10 @@ interface OrderItem {
     status: 'PENDING' | 'PROCESSING' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
     createdAt: string;
     imageUrl?: string;
+    createdAt: string;
+    imageUrl?: string;
+    paymentProofUrl?: string;
+    productId?: string;
 }
 
 const statusConfig: Record<OrderItem['status'], { label: string; color: string; icon: React.ReactNode }> = {
@@ -23,10 +27,71 @@ const statusConfig: Record<OrderItem['status'], { label: string; color: string; 
 
 // Removed DUMMY_ORDERS
 
+interface TrackingData {
+    time: string;
+    description: string;
+    status: string;
+}
+
+import { useNavigate } from 'react-router-dom';
+
 const OrderHistory: React.FC = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState<string>('ALL');
+
+    const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+    const [trackingData, setTrackingData] = useState<TrackingData[]>([]);
+    const [trackingLoading, setTrackingLoading] = useState(false);
+
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+    const [paymentFile, setPaymentFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+
+    const openTrackingModal = async (orderId: string) => {
+        setTrackingModalOpen(true);
+        setTrackingLoading(true);
+        setTrackingData([]);
+        try {
+            const response = await api.get(`/shop/orders/${orderId}/tracking`);
+            setTrackingData(response.data.data);
+        } catch (error) {
+            console.error('Gagal memuat pelacakan:', error);
+            alert('Gagal memuat data pelacakan.');
+            setTrackingModalOpen(false);
+        } finally {
+            setTrackingLoading(false);
+        }
+    };
+
+    const handleUploadPayment = async () => {
+        if (!selectedOrderId || !paymentFile) {
+            alert('Pilih file bukti pembayaran terlebih dahulu!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('paymentProof', paymentFile);
+
+        try {
+            setUploading(true);
+            await api.post(`/shop/orders/${selectedOrderId}/payment`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            alert('Bukti pembayaran berhasil diunggah!');
+            setPaymentModalOpen(false);
+            setPaymentFile(null);
+            // Refresh orders
+            window.location.reload();
+        } catch (error: any) {
+            console.error('Gagal upload bukti bayar:', error);
+            alert(error.response?.data?.message || 'Gagal mengunggah bukti pembayaran.');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -53,6 +118,8 @@ const OrderHistory: React.FC = () => {
                         status: o.status,
                         createdAt: o.createdAt,
                         imageUrl,
+                        paymentProofUrl: o.paymentProofUrl,
+                        productId: items[0]?.productId || items[0]?.id
                     };
                 });
 
@@ -182,15 +249,51 @@ const OrderHistory: React.FC = () => {
                                         )}
 
                                         {/* Footer */}
-                                        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                                        <div className="flex flex-col sm:flex-row justify-between sm:items-center mt-4 pt-4 border-t border-gray-100 gap-3">
                                             <span className="text-sm font-bold text-nutri-primaryDark">{formatPrice(order.totalPrice)}</span>
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-wrap gap-2">
+                                                {order.status === 'PENDING' && !order.paymentProofUrl && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            setSelectedOrderId(order.id);
+                                                            setPaymentModalOpen(true);
+                                                        }}
+                                                        className="px-3 py-1.5 text-xs font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition"
+                                                    >
+                                                        Upload Bukti
+                                                    </button>
+                                                )}
+                                                {order.status === 'PENDING' && order.paymentProofUrl && (
+                                                    <span className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-lg">
+                                                        Menunggu Verifikasi
+                                                    </span>
+                                                )}
                                                 {order.status === 'COMPLETED' && (
-                                                    <button className="px-3 py-1.5 text-xs font-semibold bg-nutri-tertiary text-nutri-primaryDark rounded-lg hover:bg-nutri-primary hover:text-white transition">
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (order.productId) {
+                                                                navigate(`/shop/${order.productId}`);
+                                                            } else {
+                                                                navigate('/marketplace');
+                                                            }
+                                                        }}
+                                                        className="px-3 py-1.5 text-xs font-semibold bg-nutri-tertiary text-nutri-primaryDark rounded-lg hover:bg-nutri-primary hover:text-white transition"
+                                                    >
                                                         Beli Lagi
                                                     </button>
                                                 )}
-                                                <button className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition">
+                                                {(order.status === 'DELIVERING' || order.status === 'COMPLETED') && (
+                                                    <button 
+                                                        onClick={() => openTrackingModal(order.id)}
+                                                        className="px-3 py-1.5 text-xs font-semibold bg-nutri-primary text-white rounded-lg hover:bg-nutri-primaryDark transition"
+                                                    >
+                                                        Lacak Resi
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => alert(`Detail Pesanan #${order.id}\nProduk: ${order.productName}\nTotal: ${formatPrice(order.totalPrice)}\n\n(Halaman detail pesanan lengkap sedang dalam pengembangan)`)}
+                                                    className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition"
+                                                >
                                                     Detail
                                                 </button>
                                             </div>
@@ -202,6 +305,99 @@ const OrderHistory: React.FC = () => {
                     })
                 )}
             </div>
+
+            {/* Modal Lacak Resi */}
+            {trackingModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-gray-900">Lacak Pesanan</h2>
+                            <button onClick={() => setTrackingModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+                        {trackingLoading ? (
+                            <div className="flex justify-center p-8">
+                                <RefreshCw className="w-8 h-8 text-nutri-primary animate-spin" />
+                            </div>
+                        ) : (
+                            <div className="space-y-6 mt-6">
+                                {trackingData.map((track, i) => (
+                                    <div key={i} className="flex gap-4">
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-3 h-3 rounded-full mt-1 ${i === 0 ? 'bg-nutri-primary' : 'bg-gray-300'}`} />
+                                            {i < trackingData.length - 1 && <div className="w-0.5 h-full bg-gray-200 my-1" />}
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm font-semibold ${i === 0 ? 'text-gray-900' : 'text-gray-600'}`}>{track.description}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">
+                                                {new Date(track.time).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Upload Bukti Pembayaran */}
+            {paymentModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl animate-fade-in">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-gray-900">Upload Bukti Pembayaran</h2>
+                            <button 
+                                onClick={() => {
+                                    setPaymentModalOpen(false);
+                                    setPaymentFile(null);
+                                }} 
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-4">Silakan unggah foto/screenshot bukti transfer untuk diverifikasi oleh penjual.</p>
+                        
+                        <div className="mb-4">
+                            <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        setPaymentFile(e.target.files[0]);
+                                    }
+                                }}
+                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-nutri-primary/10 file:text-nutri-primary hover:file:bg-nutri-primary/20 transition cursor-pointer"
+                            />
+                        </div>
+
+                        {paymentFile && (
+                            <p className="text-xs text-emerald-600 font-bold mb-4">File terpilih: {paymentFile.name}</p>
+                        )}
+
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => {
+                                    setPaymentModalOpen(false);
+                                    setPaymentFile(null);
+                                }}
+                                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition"
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                onClick={handleUploadPayment}
+                                disabled={uploading || !paymentFile}
+                                className="flex-1 py-2.5 bg-nutri-primary hover:bg-nutri-primaryDark text-white font-bold rounded-xl text-sm shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {uploading ? 'Mengunggah...' : 'Upload'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

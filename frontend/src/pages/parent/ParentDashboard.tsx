@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Scale, Plus, CheckCircle, TrendingUp, ArrowRight, ShoppingCart, UtensilsCrossed, X } from 'lucide-react';
+import { Scale, Plus, CheckCircle, TrendingUp, ArrowRight, ShoppingCart, UtensilsCrossed, X, ChevronDown } from 'lucide-react';
 import api from '../../services/api';
 import { Child } from '../../types';
 
@@ -15,10 +15,11 @@ interface Product {
 
 const ParentDashboard: React.FC = () => {
     // state anak aktif dan daftar anak
-    const [, setChildren] = useState<Child[]>([]);
+    const [children, setChildren] = useState<Child[]>([]);
     const [activeChild, setActiveChild] = useState<Child | null>(null);
     const [insight, setInsight] = useState<string>('');
     const [products, setProducts] = useState<Product[]>([]);
+    const [latestGrowth, setLatestGrowth] = useState<any>(null);
 
     // State untuk mengontrol buka/tutup modal popup
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -32,6 +33,7 @@ const ParentDashboard: React.FC = () => {
     const [childBirthDate, setChildBirthDate] = useState('');
     const [childBirthWeight, setChildBirthWeight] = useState('');
     const [childBirthHeight, setChildBirthHeight] = useState('');
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
     useEffect(() => {
         const loadChildren = async () => {
@@ -56,6 +58,25 @@ const ParentDashboard: React.FC = () => {
         }).catch(err => console.error('Gagal mengambil produk:', err));
     }, []);
 
+    useEffect(() => {
+        if (activeChild?.id) {
+            api.get(`/growth/history/${activeChild.id}`)
+                .then(res => {
+                    const history = res.data.data || [];
+                    if (history.length > 0) {
+                        setLatestGrowth(history[0]);
+                        setInsight(`Pertumbuhan ${activeChild.name} terakhir dicatat pada ${new Date(history[0].createdAt).toLocaleDateString()}. Status Z-Score: ${history[0].zScoreStatus}`);
+                    } else {
+                        setLatestGrowth(null);
+                        setInsight(`Belum ada data pertumbuhan untuk ${activeChild.name}. Ayo timbang sekarang!`);
+                    }
+                })
+                .catch(err => console.error('Gagal mengambil riwayat:', err));
+        } else {
+            setLatestGrowth(null);
+        }
+    }, [activeChild]);
+
     const formatAge = (birthDate?: string) => {
         if (!birthDate) return '';
         const b = new Date(birthDate);
@@ -71,9 +92,9 @@ const ParentDashboard: React.FC = () => {
         name: activeChild?.name || 'Belum ada profil anak',
         age: formatAge(activeChild?.birthDate),
         gender: activeChild?.gender === 'L' ? 'Laki-laki' : activeChild?.gender === 'P' ? 'Perempuan' : '-',
-        status: insight || '-',
-        height: activeChild?.birthHeight ? String(activeChild.birthHeight) : '-',
-        weight: activeChild?.birthWeight ? String(activeChild.birthWeight) : '-',
+        status: latestGrowth?.zScoreStatus || 'Belum Ada',
+        height: latestGrowth?.height ? String(latestGrowth.height) : (activeChild?.birthHeight ? String(activeChild.birthHeight) : '-'),
+        weight: latestGrowth?.weight ? String(latestGrowth.weight) : (activeChild?.birthWeight ? String(activeChild.birthWeight) : '-'),
         insight: insight || ''
     };
 
@@ -105,6 +126,28 @@ const ParentDashboard: React.FC = () => {
         }
     };
 
+    const handleEditChildClick = () => {
+        if (activeChild) {
+            setChildName(activeChild.name);
+            setChildGender(activeChild.gender);
+            setChildBirthDate(activeChild.birthDate.split('T')[0]); // format date
+            setChildBirthWeight(String(activeChild.birthWeight));
+            setChildBirthHeight(String(activeChild.birthHeight));
+            setIsEditMode(true);
+            setIsAddChildModalOpen(true);
+        }
+    };
+
+    const handleAddChildClick = () => {
+        setChildName('');
+        setChildGender('L');
+        setChildBirthDate('');
+        setChildBirthWeight('');
+        setChildBirthHeight('');
+        setIsEditMode(false);
+        setIsAddChildModalOpen(true);
+    };
+
     return (
         <>
             {/* 2. BANNER PROFIL ANAK */}
@@ -112,23 +155,58 @@ const ParentDashboard: React.FC = () => {
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-nutri-tertiary/40 flex-shrink-0 relative">
                         <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=150" alt="Avatar Anak" className="object-cover w-full h-full" />
-                        <span className="absolute bottom-1 right-1 bg-nutri-secondary text-nutri-primaryDark text-[9px] font-bold px-1 rounded">14m</span>
+                        <span className="absolute bottom-1 right-1 bg-nutri-secondary text-nutri-primaryDark text-[9px] font-bold px-1 rounded">{childData.age.split(' ')[0] || '-'}</span>
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-nutri-primaryDark">{childData.name}</h2>
+                        <div className="flex items-center gap-2 relative group">
+                            {children.length > 0 ? (
+                                <>
+                                    <select 
+                                        className="text-xl font-bold text-nutri-primaryDark bg-transparent focus:outline-none appearance-none cursor-pointer hover:bg-gray-50 rounded py-1 pl-2 pr-8"
+                                        value={activeChild?.id || ''}
+                                        onChange={(e) => {
+                                            const selected = children.find(c => c.id === e.target.value);
+                                            if (selected) setActiveChild(selected);
+                                        }}
+                                        title="Ganti Profil Anak"
+                                    >
+                                        {children.map(c => (
+                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none group-hover:text-nutri-primaryDark transition-colors" />
+                                </>
+                            ) : (
+                                <h2 className="text-xl font-bold text-nutri-primaryDark">{childData.name}</h2>
+                            )}
+                        </div>
                         <p className="text-xs text-gray-400 font-medium">{childData.age} • {childData.gender}</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => activeChild ? setIsModalOpen(true) : setIsAddChildModalOpen(true)}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-nutri-secondary hover:bg-opacity-90 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
-                >
-                    {activeChild ? (
-                        <><Scale className="w-4 h-4" /> Timbang Sekarang</>
-                    ) : (
-                        <><Plus className="w-4 h-4" /> Buat Profil Anak</>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {activeChild && (
+                        <button
+                            onClick={handleEditChildClick}
+                            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                        >
+                            Edit Profil
+                        </button>
                     )}
-                </button>
+                    <button
+                        onClick={handleAddChildClick}
+                        className="px-4 py-2.5 bg-nutri-tertiary hover:bg-nutri-tertiary/80 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+                    >
+                        <Plus className="w-4 h-4" /> Tambah Anak
+                    </button>
+                    {activeChild && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="px-5 py-2.5 bg-nutri-secondary hover:bg-opacity-90 text-nutri-primaryDark font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+                        >
+                            <Scale className="w-4 h-4" /> Timbang
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* 3. SECTION STATUS & INSIGHT */}
@@ -164,8 +242,14 @@ const ParentDashboard: React.FC = () => {
                             "{childData.insight}"
                         </div>
                         <div className="flex flex-wrap gap-2 text-[11px] font-bold">
-                            <span className="px-3 py-1.5 bg-nutri-tertiary text-nutri-primaryDark rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Tinggi Normal</span>
-                            <span className="px-3 py-1.5 bg-nutri-secondary/20 text-orange-600 rounded-full flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Perlu Optimasi Berat</span>
+                            {latestGrowth?.zScoreStatus ? (
+                                <span className={`px-3 py-1.5 rounded-full flex items-center gap-1 ${latestGrowth.zScoreStatus === 'Normal' ? 'bg-nutri-tertiary text-nutri-primaryDark' : 'bg-nutri-secondary/20 text-orange-600'}`}>
+                                    {latestGrowth.zScoreStatus === 'Normal' ? <CheckCircle className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />} 
+                                    {latestGrowth.zScoreStatus}
+                                </span>
+                            ) : (
+                                <span className="px-3 py-1.5 bg-gray-100 text-gray-500 rounded-full flex items-center gap-1">Data belum tersedia</span>
+                            )}
                         </div>
                         <Link to="/child-development" className="inline-flex items-center text-xs font-bold text-nutri-primaryDark hover:underline pt-2 gap-1">
                             Lihat Grafik Lengkap <ArrowRight className="w-4 h-4" />
@@ -292,8 +376,8 @@ const ParentDashboard: React.FC = () => {
                         >
                             <X className="w-5 h-5" />
                         </button>
-                        <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">Buat Profil Anak</h3>
-                        <p className="text-xs text-gray-500 mb-6">Masukkan data diri anak Anda untuk memulai.</p>
+                        <h3 className="text-xl font-bold text-nutri-primaryDark mb-1">{isEditMode ? 'Edit Profil Anak' : 'Buat Profil Anak'}</h3>
+                        <p className="text-xs text-gray-500 mb-6">{isEditMode ? 'Perbarui data diri anak Anda di bawah ini.' : 'Masukkan data diri anak Anda untuk memulai.'}</p>
                         
                         <div className="space-y-4">
                             <div>
@@ -366,24 +450,36 @@ const ParentDashboard: React.FC = () => {
                                             return;
                                         }
                                         try {
-                                            await api.post('/children/add', {
-                                                name: childName,
-                                                gender: childGender,
-                                                birthDate: childBirthDate,
-                                                birthWeight: parseFloat(childBirthWeight),
-                                                birthHeight: parseFloat(childBirthHeight)
-                                            });
-                                            alert("Profil anak berhasil dibuat!");
+                                            if (isEditMode && activeChild) {
+                                                await api.put(`/children/${activeChild.id}`, {
+                                                    name: childName,
+                                                    gender: childGender,
+                                                    birthDate: childBirthDate,
+                                                    birthWeight: parseFloat(childBirthWeight),
+                                                    birthHeight: parseFloat(childBirthHeight)
+                                                });
+                                                alert("Profil anak berhasil diperbarui!");
+                                            } else {
+                                                await api.post('/children/add', {
+                                                    name: childName,
+                                                    gender: childGender,
+                                                    birthDate: childBirthDate,
+                                                    birthWeight: parseFloat(childBirthWeight),
+                                                    birthHeight: parseFloat(childBirthHeight)
+                                                });
+                                                alert("Profil anak berhasil dibuat!");
+                                            }
+                                            
                                             setIsAddChildModalOpen(false);
                                             window.location.reload();
                                         } catch (err) {
-                                            alert("Gagal membuat profil anak");
+                                            alert(isEditMode ? "Gagal memperbarui profil anak" : "Gagal membuat profil anak");
                                             console.error(err);
                                         }
                                     }}
                                     className="flex-1 py-3 bg-nutri-primary hover:bg-opacity-90 text-white font-bold rounded-xl text-sm shadow-sm transition"
                                 >
-                                    Buat Profil
+                                    {isEditMode ? 'Simpan' : 'Buat Profil'}
                                 </button>
                             </div>
                         </div>

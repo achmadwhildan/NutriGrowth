@@ -54,8 +54,8 @@ const Login: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center p-4 bg-nutri-tertiary/30">
             <div className="bg-white rounded-3xl shadow-xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden">
 
-                {/* SISI KIRI: Gambar Ilustrasi (Sesuai mockup Screenshot 2026-06-17 183257.png) */}
-                <div className="md:w-1/2 bg-nutri-primary/20 p-12 flex flex-col justify-between relative min-h-[350px] md:min-h-[500px]">
+                {/* SISI KIRI: Gambar Ilustrasi */}
+                <div className="hidden md:flex md:w-1/2 bg-nutri-primary/20 p-12 flex-col justify-between relative min-h-[350px] md:min-h-[500px]">
                     <div className="flex items-center gap-2 text-nutri-primaryDark font-bold text-2xl">
                         <img src="/src/assets/images/logo.png" alt="Logo" className="h-8 w-auto" /> NutriGrow
                     </div>

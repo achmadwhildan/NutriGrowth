@@ -199,28 +199,10 @@ const Home: React.FC = () => {
 
                     {/* Main Hero Image */}
                     <img
-                        src="/src/assets/hero.png"
-                        alt="Ilustrasi Dashboard NutriGrow"
-                        className="w-full h-full object-cover object-top"
-                        onError={(e) => {
-                            // fallback jika hero.png belum ada
-                            const target = e.currentTarget;
-                            target.style.display = "none";
-                            const fallback = target.nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = "flex";
-                        }}
+                        src="/src/assets/images/nutrigrow_hero.png"
+                        alt="Ilustrasi NutriGrow"
+                        className="w-full h-full object-cover object-center"
                     />
-                    {/* Fallback visual jika gambar tidak ada */}
-                    <div
-                        style={{ display: "none" }}
-                        className="w-full h-full items-center justify-center flex-col gap-4 bg-gradient-to-br from-nutri-tertiary via-nutri-primary/20 to-nutri-secondary/10"
-                    >
-                        <img
-                            src="/src/assets/images/Tracking-Interface.png"
-                            alt="Tracking Interface"
-                            className="max-h-[280px] md:max-h-[400px] w-auto rounded-2xl shadow-xl object-contain"
-                        />
-                    </div>
 
                     {/* Bottom gradient overlay */}
                     <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-nutri-neutralBg/30 to-transparent pointer-events-none"></div>

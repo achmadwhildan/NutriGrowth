@@ -110,7 +110,7 @@ const SellerDashboard: React.FC = () => {
                     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                         
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                         <th className="p-4">Pembeli</th>

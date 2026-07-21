@@ -85,8 +85,8 @@ const ConsultMarketplace: React.FC = () => {
                   <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100">
                     <img src={doc.photoUrl || 'https://images.unsplash.com/photo-1612349317150-e410f624c427?auto=format&fit=crop&q=80&w=150'} alt={doc.name} className="w-full h-full object-cover" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-nutri-primaryDark text-sm leading-tight max-w-[150px]">{doc.name}</h3>
+                  <div className="cursor-pointer" onClick={() => navigate(`/consult/${doc.id}`)}>
+                    <h3 className="font-bold text-nutri-primaryDark text-sm leading-tight max-w-[150px] hover:underline">{doc.name}</h3>
                     <p className="text-[10px] text-gray-400 font-medium mt-1">{doc.specialization}</p>
                   </div>
                 </div>
@@ -137,8 +137,8 @@ const ConsultMarketplace: React.FC = () => {
                       <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100">
                         <img src={p.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=150'} alt={p.name} className="w-full h-full object-cover" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-nutri-primaryDark text-sm leading-tight max-w-[150px]">{p.name}</h3>
+                      <div className="cursor-pointer" onClick={() => navigate(`/shop/${p.id}`)}>
+                        <h3 className="font-bold text-nutri-primaryDark text-sm leading-tight max-w-[150px] hover:underline">{p.name}</h3>
                         <p className="text-[10px] text-gray-400 font-medium mt-1">{p.category || ''}</p>
                       </div>
                     </div>

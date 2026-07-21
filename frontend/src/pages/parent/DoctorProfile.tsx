@@ -2,6 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
 
+const dayMap: Record<string, number> = {
+  'Minggu': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6
+};
+
+// Gets the next Date for a given day name and time string (HH:MM)
+const getNextDateForDay = (dayName: string, timeStr: string) => {
+  const targetDay = dayMap[dayName];
+  if (targetDay === undefined) return null;
+
+  const now = new Date();
+  const currentDay = now.getDay();
+  let daysUntil = targetDay - currentDay;
+  if (daysUntil < 0) daysUntil += 7; // Next week
+  
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  
+  const result = new Date(now);
+  result.setDate(now.getDate() + daysUntil);
+  result.setHours(hours, minutes, 0, 0);
+  
+  // If the target is today but the time has already passed, move to next week
+  if (daysUntil === 0 && result < now) {
+    result.setDate(result.getDate() + 7);
+  }
+
+  return result.toISOString();
+};
+
 const DoctorProfile: React.FC = () => {
   const navigate = useNavigate();
   const { id: doctorId } = useParams<{ id?: string }>();
@@ -63,6 +91,18 @@ const DoctorProfile: React.FC = () => {
       return <div className="max-w-7xl mx-auto p-10 text-center font-bold text-red-400">Dokter tidak ditemukan.</div>;
   }
 
+  const isTimeBooked = (timeStr: string) => {
+      if (!doctor?.consultations) return false;
+      const targetDateStr = getNextDateForDay(selectedDay, timeStr);
+      if (!targetDateStr) return false;
+      
+      return doctor.consultations.some((c: any) => {
+          const cDate = new Date(c.scheduledAt).getTime();
+          const tDate = new Date(targetDateStr).getTime();
+          return cDate === tDate;
+      });
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 font-sans">
       
@@ -100,27 +140,35 @@ const DoctorProfile: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Pendidikan (Dummy for now as we don't have education table) */}
+            {/* Pendidikan */}
             <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
               <h3 className="text-sm font-bold text-nutri-primaryDark flex items-center gap-2 mb-4">
                 <span>🎓</span> Pendidikan & Sertifikasi
               </h3>
               <ul className="space-y-4">
                 <li className="relative pl-4 before:content-[''] before:w-1.5 before:h-1.5 before:bg-amber-800 before:absolute before:left-0 before:top-2 before:rounded-full">
-                  <p className="text-xs font-bold text-gray-800">Spesialis</p>
+                  <p className="text-xs font-bold text-gray-800">{doctor.education || 'Spesialis'}</p>
                   <p className="text-[11px] text-gray-500 mt-0.5">Telah diverifikasi oleh sistem</p>
                 </li>
               </ul>
             </div>
 
-            {/* Keahlian (Derived from Bio ideally, dummy for layout) */}
+            {/* Keahlian */}
             <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
               <h3 className="text-sm font-bold text-nutri-primaryDark flex items-center gap-2 mb-4">
                 <span>🩺</span> Keahlian
               </h3>
               <div className="flex flex-wrap gap-2 text-[11px] font-medium text-gray-600">
-                <span className="px-3 py-1.5 bg-gray-100 rounded-lg">Konsultasi Anak</span>
-                <span className="px-3 py-1.5 bg-gray-100 rounded-lg">Gizi & Nutrisi</span>
+                {doctor.expertise ? (
+                  doctor.expertise.split(',').map((item: string, i: number) => (
+                    <span key={i} className="px-3 py-1.5 bg-gray-100 rounded-lg">{item.trim()}</span>
+                  ))
+                ) : (
+                  <>
+                    <span className="px-3 py-1.5 bg-gray-100 rounded-lg">Konsultasi Anak</span>
+                    <span className="px-3 py-1.5 bg-gray-100 rounded-lg">Gizi & Nutrisi</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -169,19 +217,25 @@ const DoctorProfile: React.FC = () => {
                         {availableTimes.length === 0 ? (
                             <span className="text-gray-400 italic col-span-2">Tidak ada slot jam.</span>
                         ) : (
-                            availableTimes.map((t, idx) => (
-                                <button 
-                                key={idx}
-                                onClick={() => setSelectedTime(t)}
-                                className={`py-2 rounded-xl border transition ${
-                                    selectedTime === t 
-                                    ? 'bg-emerald-700/80 text-white border-emerald-700 shadow-sm' 
-                                    : 'bg-white text-gray-600 border-gray-200 hover:border-nutri-primary'
-                                }`}
-                                >
-                                {t}
-                                </button>
-                            ))
+                            availableTimes.map((t, idx) => {
+                                const booked = isTimeBooked(t);
+                                return (
+                                    <button 
+                                    key={idx}
+                                    onClick={() => setSelectedTime(t)}
+                                    disabled={booked}
+                                    className={`py-2 rounded-xl border transition ${
+                                        booked
+                                        ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
+                                        : selectedTime === t 
+                                        ? 'bg-emerald-700/80 text-white border-emerald-700 shadow-sm' 
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-nutri-primary'
+                                    }`}
+                                    >
+                                    {t} {booked && '(Penuh)'}
+                                    </button>
+                                );
+                            })
                         )}
                     </div>
                 </>
@@ -203,16 +257,19 @@ const DoctorProfile: React.FC = () => {
             disabled={!selectedDay || !selectedTime}
             onClick={async () => {
                 try {
-                  // We send scheduledAt derived from selected day and time in a real app.
-                  // For MVP, passing doctorId and letting backend create it is fine.
-                  // (Optionally we can pass scheduledTime if we update the backend consultation table)
-                  const res = await api.post('/consultations', { doctorId });
+                  const scheduledAt = getNextDateForDay(selectedDay, selectedTime);
+                  if (!scheduledAt) {
+                      alert("Gagal memproses jadwal.");
+                      return;
+                  }
+                  
+                  const res = await api.post('/consultations', { doctorId, scheduledAt });
                   const id = res?.data?.data?.id;
                   if (id) navigate(`/chat/${id}`);
                   else navigate('/chat');
-                } catch (err) {
+                } catch (err: any) {
                   console.error('Gagal membuat konsultasi:', err);
-                  alert("Gagal membuat konsultasi. Pastikan Anda sudah login.");
+                  alert(err.response?.data?.message || "Gagal membuat konsultasi. Pastikan Anda sudah login.");
                 }
               }}
             className="w-full py-3.5 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-xs shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"

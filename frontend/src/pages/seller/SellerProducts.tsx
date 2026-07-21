@@ -14,6 +14,7 @@ const SellerProducts: React.FC = () => {
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -31,6 +32,39 @@ const SellerProducts: React.FC = () => {
         load();
     }, []);
 
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
+        try {
+            await api.delete(`/shop/products/${id}`);
+            setProducts(prev => prev.filter(p => p.id !== id));
+            alert('Produk berhasil dihapus');
+        } catch (error) {
+            console.error('Gagal hapus produk', error);
+            alert('Gagal menghapus produk');
+        }
+    };
+
+    const handleEditClick = (product: any) => {
+        setEditingProductId(product.id);
+        setName(product.name);
+        setPrice(product.price);
+        setStock(product.stock);
+        setCategory(product.category || '');
+        setDescription(product.description || '');
+        setImageUrl(product.imageUrl || '');
+        setShowModal(true);
+    };
+
+    const resetForm = () => {
+        setEditingProductId(null);
+        setName('');
+        setPrice('');
+        setStock('');
+        setCategory('');
+        setDescription('');
+        setImageUrl('');
+    };
+
     return (
         <div className="space-y-8 font-sans">
             
@@ -40,7 +74,10 @@ const SellerProducts: React.FC = () => {
                     <p className="text-sm text-gray-500 mt-1">Kelola daftar menu MPASI yang Anda jual.</p>
                 </div>
                 <button 
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                        resetForm();
+                        setShowModal(true);
+                    }}
                     className="px-5 py-2.5 bg-nutri-primary hover:bg-nutri-primaryDark text-white font-bold rounded-xl text-xs transition shadow-sm"
                 >
                     + Tambah Produk Baru
@@ -92,8 +129,8 @@ const SellerProducts: React.FC = () => {
                                         )}
                                     </td>
                                     <td className="p-4 flex gap-3 mt-2">
-                                        <button className="text-[11px] font-bold text-nutri-primary hover:text-nutri-primaryDark transition">Edit</button>
-                                        <button className="text-[11px] font-bold text-red-500 hover:text-red-700 transition">Hapus</button>
+                                        <button onClick={() => handleEditClick(p)} className="text-[11px] font-bold text-nutri-primary hover:text-nutri-primaryDark transition">Edit</button>
+                                        <button onClick={() => handleDelete(p.id)} className="text-[11px] font-bold text-red-500 hover:text-red-700 transition">Hapus</button>
                                     </td>
                                 </tr>
                                 ))
@@ -108,8 +145,8 @@ const SellerProducts: React.FC = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-800">Tambah Produk Baru</h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 font-bold"><X className="w-5 h-5" /></button>
+                            <h3 className="font-bold text-gray-800">{editingProductId ? 'Edit Produk' : 'Tambah Produk Baru'}</h3>
+                            <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-400 hover:text-gray-600 font-bold"><X className="w-5 h-5" /></button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
@@ -142,18 +179,23 @@ const SellerProducts: React.FC = () => {
                                 onClick={async () => {
                                     try {
                                         const payload = { name, description, price, stock, category, imageUrl };
-                                        const res = await api.post('/shop/products', payload);
-                                        setProducts(prev => [res.data.data, ...prev]);
+                                        if (editingProductId) {
+                                            const res = await api.put(`/shop/products/${editingProductId}`, payload);
+                                            setProducts(prev => prev.map(p => p.id === editingProductId ? res.data.data : p));
+                                        } else {
+                                            const res = await api.post('/shop/products', payload);
+                                            setProducts(prev => [res.data.data, ...prev]);
+                                        }
                                         setShowModal(false);
-                                        setName(''); setPrice(''); setStock(''); setDescription(''); setImageUrl(''); setCategory('');
+                                        resetForm();
                                     } catch (err: any) {
-                                        console.error('Gagal menambah produk:', err);
-                                        alert(err?.response?.data?.message || 'Gagal menambah produk');
+                                        console.error('Gagal menyimpan produk:', err);
+                                        alert(err?.response?.data?.message || 'Gagal menyimpan produk');
                                     }
                                 }}
                                 className="w-full py-3 bg-nutri-primary hover:bg-nutri-primaryDark text-white font-bold rounded-xl transition shadow-sm mt-2"
                             >
-                                Simpan Produk
+                                {editingProductId ? 'Update Produk' : 'Simpan Produk'}
                             </button>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Phone, Video, Paperclip, Baby, MicOff, PhoneOff, VideoOff, User } from 'lucide-react';
+import { ArrowLeft, Phone, Video, Paperclip, Baby, User } from 'lucide-react';
+import { JitsiMeeting } from '@jitsi/react-sdk';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -20,32 +21,15 @@ const DoctorConsultRoom: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isCalling, setIsCalling] = useState(false);
     const [callType, setCallType] = useState<'video' | 'audio'>('video');
-    const localVideoRef = useRef<HTMLVideoElement>(null);
-    const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const startCall = async (type: 'video' | 'audio') => {
+    const startCall = (type: 'video' | 'audio') => {
         setCallType(type);
         setIsCalling(true);
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: type === 'video', audio: true });
-            setMediaStream(stream);
-            setTimeout(() => {
-                if (localVideoRef.current) {
-                    localVideoRef.current.srcObject = stream;
-                }
-            }, 100);
-        } catch (err) {
-            console.error("Gagal mengakses kamera/mic:", err);
-        }
     };
 
     const endCall = () => {
         setIsCalling(false);
-        if (mediaStream) {
-            mediaStream.getTracks().forEach(track => track.stop());
-            setMediaStream(null);
-        }
     };
     const auth = useContext(AuthContext);
     const currentUserId = auth?.user?.id;
@@ -254,68 +238,45 @@ const DoctorConsultRoom: React.FC = () => {
 
             {/* Call Overlay Modal */}
             {isCalling && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-gray-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl relative flex flex-col min-h-[500px] border border-gray-800">
-                        
-                        {/* Mock Video Background */}
-                        {callType === 'video' && (
-                            <div className="absolute inset-0 z-0">
-                                <img 
-                                    src={"https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=600"} 
-                                    alt="Patient" 
-                                    className="w-full h-full object-cover opacity-60" 
-                                />
-                                <div className="absolute bottom-4 right-4 w-28 h-36 bg-gray-800 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg">
-                                    {/* Mock self video */}
-                                    {mediaStream && callType === 'video' ? (
-                                        <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover transform -scale-x-100" />
-                                    ) : (
-                                        <div className="w-full h-full bg-gray-700 flex items-center justify-center text-white/50">
-                                            <User className="w-8 h-8" />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Audio Background */}
-                        {callType === 'audio' && (
-                             <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-gray-800">
-                                <div className="w-32 h-32 rounded-full bg-gray-700 border-4 border-gray-600 flex items-center justify-center shadow-2xl relative">
-                                    <div className="absolute inset-0 rounded-full border-4 border-nutri-primary animate-ping opacity-20"></div>
-                                    <User className="w-16 h-16 text-gray-400" />
-                                </div>
-                             </div>
-                        )}
-
-                        {/* Top Bar */}
-                        <div className="relative z-10 p-6 flex flex-col items-center justify-center flex-1">
-                            <h3 className="text-white font-bold text-xl drop-shadow-md">{patientInfo?.name || 'Pasien'}</h3>
-                            <p className="text-white/70 text-sm font-medium mt-1 mb-8 drop-shadow-md">
-                                {callType === 'video' ? 'Video Call...' : 'Panggilan Suara...'}
-                            </p>
-                            <div className="text-white/60 text-sm bg-black/30 px-4 py-1.5 rounded-full backdrop-blur-md">
-                                Menghubungkan
-                            </div>
+                <div className="fixed inset-0 z-[100] bg-black animate-fade-in flex flex-col">
+                    <div className="p-4 flex justify-between items-center bg-gray-900 text-white">
+                        <div>
+                            <h3 className="font-bold">{patientInfo?.name || 'Pasien'}</h3>
+                            <p className="text-xs text-gray-400">NutriGrow Telemedicine - Doctor Room</p>
                         </div>
-
-                        {/* Controls */}
-                        <div className="relative z-10 p-8 flex justify-center items-center gap-6 bg-gradient-to-t from-black/80 to-transparent pt-12">
-                            <button className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white transition">
-                                <MicOff className="w-5 h-5" />
-                            </button>
-                            <button 
-                                onClick={endCall}
-                                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition shadow-lg shadow-red-500/30"
-                            >
-                                <PhoneOff className="w-7 h-7" />
-                            </button>
-                            {callType === 'video' && (
-                                <button className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white transition">
-                                    <VideoOff className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
+                        <button 
+                            onClick={endCall}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                    <div className="flex-1">
+                        <JitsiMeeting
+                            domain="meet.jit.si"
+                            roomName={`NutriGrow-Consult-${id}`}
+                            configOverwrite={{
+                                startWithAudioMuted: false,
+                                startWithVideoMuted: callType === 'audio',
+                                prejoinPageEnabled: false,
+                                disableDeepLinking: true,
+                            }}
+                            interfaceConfigOverwrite={{
+                                DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                            }}
+                            userInfo={{
+                                displayName: auth?.user?.name || 'Dokter',
+                            }}
+                            onApiReady={(externalApi) => {
+                                externalApi.addListener('videoConferenceLeft', () => {
+                                    endCall();
+                                });
+                            }}
+                            getIFrameRef={(iframeRef) => {
+                                iframeRef.style.height = '100%';
+                                iframeRef.style.width = '100%';
+                            }}
+                        />
                     </div>
                 </div>
             )}

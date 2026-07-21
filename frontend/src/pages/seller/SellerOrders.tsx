@@ -22,7 +22,8 @@ const SellerOrders: React.FC = () => {
                     address: o.shippingAddress || '',
                     items: (o.items || []).map((it: any) => `${it.product?.name || it.productName || 'Produk'} (${it.quantity})`).join(', '),
                     total: `Rp ${Number(o.totalAmount || o.totalPrice || 0).toLocaleString('id-ID')}`,
-                    status: o.status || 'PENDING'
+                    status: o.status || 'PENDING',
+                    paymentProofUrl: o.paymentProofUrl
                 }));
 
                 setOrders(mapped);
@@ -36,7 +37,12 @@ const SellerOrders: React.FC = () => {
         load();
     }, []);
 
-    const filteredOrders = activeTab === 'Semua' ? orders : orders.filter(o => o.status === activeTab || (o.status === 'PENDING' && activeTab === 'Baru'));
+    const filteredOrders = activeTab === 'Semua' ? orders : orders.filter(o => 
+        (activeTab === 'Baru' && o.status === 'PENDING') ||
+        (activeTab === 'Diproses' && o.status === 'PROCESSING') ||
+        (activeTab === 'Dikirim' && o.status === 'DELIVERING') ||
+        (activeTab === 'Selesai' && o.status === 'COMPLETED')
+    );
 
     return (
         <div className="space-y-8 font-sans">
@@ -50,15 +56,18 @@ const SellerOrders: React.FC = () => {
                 
                 {/* Tabs */}
                 <div className="flex overflow-x-auto border-b border-gray-100 p-2 gap-2">
-                    {['Semua', 'Baru', 'Diproses', 'Dikirim', 'Selesai'].map((tab) => (
-                        <button 
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`px-5 py-2.5 text-xs font-bold rounded-xl transition whitespace-nowrap ${activeTab === tab ? 'bg-nutri-primary text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >
-                            {tab} {tab === 'Baru' && <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-[9px]">1</span>}
-                        </button>
-                    ))}
+                    {['Semua', 'Baru', 'Diproses', 'Dikirim', 'Selesai'].map((tab) => {
+                        const countNew = orders.filter(o => o.status === 'PENDING').length;
+                        return (
+                            <button 
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-5 py-2.5 text-xs font-bold rounded-xl transition whitespace-nowrap ${activeTab === tab ? 'bg-nutri-primary text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
+                            >
+                                {tab} {tab === 'Baru' && countNew > 0 && <span className="ml-1 px-1.5 py-0.5 bg-orange-500 text-white rounded-full text-[9px]">{countNew}</span>}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* List */}
@@ -72,13 +81,13 @@ const SellerOrders: React.FC = () => {
                             <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-nutri-primary/30 transition shadow-sm flex flex-col md:flex-row gap-6">
                                 
                                 <div className="flex-1 space-y-3">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-wrap items-center gap-3">
                                         <span className="text-sm font-extrabold text-gray-800">{o.id}</span>
                                         <span className="text-[10px] text-gray-400 font-bold">{o.date}</span>
-                                        {o.status === 'Baru' && <span className="px-2 py-1 bg-orange-50 text-nutri-secondary text-[10px] font-bold rounded">Baru</span>}
-                                        {o.status === 'Diproses' && <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded">Diproses</span>}
-                                        {o.status === 'Dikirim' && <span className="px-2 py-1 bg-nutri-tertiary text-nutri-primaryDark text-[10px] font-bold rounded">Dikirim</span>}
-                                        {o.status === 'Selesai' && <span className="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] font-bold rounded">Selesai</span>}
+                                        {o.status === 'PENDING' && <span className="px-2 py-1 bg-orange-50 text-nutri-secondary text-[10px] font-bold rounded">Baru</span>}
+                                        {o.status === 'PROCESSING' && <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded">Diproses</span>}
+                                        {o.status === 'DELIVERING' && <span className="px-2 py-1 bg-nutri-tertiary text-nutri-primaryDark text-[10px] font-bold rounded">Dikirim</span>}
+                                        {o.status === 'COMPLETED' && <span className="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] font-bold rounded">Selesai</span>}
                                     </div>
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -91,6 +100,16 @@ const SellerOrders: React.FC = () => {
                                             <p className="text-gray-400 font-medium mb-0.5">Pesanan</p>
                                             <p className="font-bold text-gray-800">{o.items}</p>
                                             <p className="text-nutri-primaryDark font-extrabold mt-1">{o.total}</p>
+                                            {o.paymentProofUrl && (
+                                                <a 
+                                                    href={`http://localhost:5000${o.paymentProofUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-block mt-2 text-[10px] text-blue-600 underline font-bold"
+                                                >
+                                                    Lihat Bukti Pembayaran
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -116,9 +135,20 @@ const SellerOrders: React.FC = () => {
                                         <option value="DELIVERING">Dikirim</option>
                                         <option value="COMPLETED">Selesai</option>
                                     </select>
-                                    {o.status === 'Baru' && (
-                                        <button className="w-full mt-1 py-2 bg-nutri-primary hover:bg-nutri-primaryDark text-white text-[11px] font-bold rounded-xl transition shadow-sm">
-                                            Terima Pesanan
+                                    {o.status === 'PENDING' && (
+                                        <button 
+                                            onClick={async () => {
+                                                try {
+                                                    await api.put(`/shop/orders/${o.id}/status`, { status: 'PROCESSING' });
+                                                    setOrders(prev => prev.map(p => p.id === o.id ? { ...p, status: 'PROCESSING' } : p));
+                                                } catch (err) {
+                                                    console.error('Gagal update status:', err);
+                                                    alert('Gagal menerima pesanan');
+                                                }
+                                            }}
+                                            className="w-full mt-1 py-2 bg-nutri-primary hover:bg-nutri-primaryDark text-white text-[11px] font-bold rounded-xl transition shadow-sm"
+                                        >
+                                            {o.paymentProofUrl ? 'Verifikasi & Proses' : 'Terima Pesanan'}
                                         </button>
                                     )}
                                 </div>

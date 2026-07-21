@@ -70,6 +70,20 @@ export const createConsultation = async (req, res) => {
         const userId = req.user.id;
 
         if (!doctorId) return res.status(400).json({ message: 'doctorId diperlukan' });
+        if (!scheduledAt) return res.status(400).json({ message: 'scheduledAt diperlukan untuk mencegah jadwal bentrok' });
+
+        const parsedDate = new Date(scheduledAt);
+        const existingConsultation = await prisma.consultation.findFirst({
+            where: {
+                doctorId: doctorId,
+                scheduledAt: parsedDate,
+                status: { not: 'CANCELLED' }
+            }
+        });
+
+        if (existingConsultation) {
+            return res.status(409).json({ message: 'Maaf, jadwal pada jam tersebut sudah dibooking. Silakan pilih jam lain.' });
+        }
 
         const doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
         if (!doctor) return res.status(404).json({ message: 'Dokter tidak ditemukan' });
@@ -78,7 +92,7 @@ export const createConsultation = async (req, res) => {
             data: {
                 userId,
                 doctorId,
-                scheduledAt: scheduledAt ? new Date(scheduledAt) : new Date(),
+                scheduledAt: parsedDate,
                 status: 'PENDING'
             }
         });
@@ -166,7 +180,11 @@ export const getDoctorById = async (req, res) => {
             where: { id },
             include: { 
                 user: { select: { name: true, email: true } },
-                schedules: true
+                schedules: true,
+                consultations: {
+                    select: { scheduledAt: true, status: true },
+                    where: { status: { not: 'CANCELLED' } }
+                }
             }
         });
 

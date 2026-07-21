@@ -103,6 +103,8 @@
     isActive        Boolean        @default(true)
     bio             String?        // Tentang dokter (opsional)
     photoUrl        String?        // Foto profil dokter (opsional)
+    education       String?        // Riwayat pendidikan dokter (opsional)
+    expertise       String?        // Keahlian dokter (opsional)
     schedules       DoctorSchedule[]
     consultations   Consultation[]
     createdAt       DateTime       @default(now())
@@ -176,6 +178,7 @@ model Order {
   user            User        @relation(fields: [userId], references: [id])
   totalAmount     Decimal     @db.Decimal(10, 2)
   shippingAddress String?
+  paymentProofUrl String?
   status          OrderStatus @default(PENDING)
   items           OrderItem[]
   createdAt       DateTime    @default(now())
