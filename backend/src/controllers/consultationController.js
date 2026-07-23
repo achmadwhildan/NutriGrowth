@@ -56,6 +56,21 @@ export const sendMessage = async (req, res) => {
             }
         });
 
+        // Tentukan penerima pesan untuk notifikasi
+        const recipientId = req.user.id === consultation.userId ? consultation.doctor?.userId : consultation.userId;
+        
+        if (recipientId) {
+            await prisma.notification.create({
+                data: {
+                    userId: recipientId,
+                    title: 'Pesan Baru',
+                    message: 'Anda menerima pesan baru pada sesi konsultasi.',
+                    type: 'info',
+                    link: req.user.id === consultation.userId ? `/doctor/consult/${consultationId}` : `/chat/${consultationId}`
+                }
+            });
+        }
+
         res.status(201).json({ message: 'Pesan terkirim', data: newMsg });
     } catch (error) {
         console.error(error);

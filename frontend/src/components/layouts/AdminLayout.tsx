@@ -1,6 +1,6 @@
 import React, { ReactNode, useState, useContext, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, Menu, X } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationBell from '../NotificationBell';
 
@@ -9,6 +9,7 @@ const AdminNavbar: React.FC = () => {
     const navigate = useNavigate();
     const auth = useContext(AuthContext);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
@@ -34,12 +35,24 @@ const AdminNavbar: React.FC = () => {
             : "hover:text-nutri-primary transition pb-1";
     };
 
+    const getMobileLinkClass = (path: string) => {
+        return location.pathname === path
+            ? "block px-4 py-2 bg-nutri-primary/10 text-nutri-primaryDark rounded-xl font-bold"
+            : "block px-4 py-2 text-gray-500 hover:bg-gray-50 hover:text-nutri-primary rounded-xl transition";
+    }
+
     return (
         <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
                 <div className="text-xl font-bold text-nutri-primaryDark flex items-center gap-2">
+                    <button 
+                        className="md:hidden p-1 mr-2 text-gray-500 hover:bg-gray-100 rounded"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                     <span className="w-8 h-8 bg-nutri-primary text-white rounded-lg flex justify-center items-center font-bold text-xs">NG</span> 
-                    Super Admin
+                    <span className="hidden sm:inline">Super Admin</span>
                 </div>
                 <nav className="hidden md:flex gap-8 text-sm font-semibold text-gray-500">
                     <Link to="/admin" className={getLinkClass('/admin')}>Dashboard</Link>
@@ -72,6 +85,17 @@ const AdminNavbar: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden border-t border-gray-100 bg-white absolute w-full left-0 shadow-lg">
+                    <nav className="px-4 py-4 space-y-2 text-sm font-semibold">
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/admin" className={getMobileLinkClass('/admin')}>Dashboard</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/admin/verify-doctors" className={getMobileLinkClass('/admin/verify-doctors')}>Verifikasi Dokter</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/admin/verify-sellers" className={getMobileLinkClass('/admin/verify-sellers')}>Verifikasi Seller</Link>
+                    </nav>
+                </div>
+            )}
         </header>
     );
 };
@@ -82,10 +106,10 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
             <AdminNavbar />
             
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-8">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 md:py-8">
                 {children || <Outlet />}
             </main>
         </div>

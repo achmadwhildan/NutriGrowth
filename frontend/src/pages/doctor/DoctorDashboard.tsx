@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Calendar, Star, Hand } from 'lucide-react';
@@ -27,11 +28,11 @@ const DoctorDashboard: React.FC = () => {
     const updateStatus = async (id: string, status: string) => {
         try {
             await api.put(`/consultations/${id}/status`, { status });
-            alert(`Berhasil update status menjadi ${status}`);
+            toast.success(`Berhasil update status menjadi ${status}`);
             loadConsultations();
         } catch (err) {
             console.error('Gagal update status:', err);
-            alert('Gagal update status');
+            toast.error('Gagal update status');
         }
     };
 

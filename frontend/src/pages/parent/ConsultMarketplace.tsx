@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
@@ -82,7 +83,7 @@ const ConsultMarketplace: React.FC = () => {
             <div key={doc.id} className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-4">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0">
                     <img src={doc.photoUrl || 'https://images.unsplash.com/photo-1612349317150-e410f624c427?auto=format&fit=crop&q=80&w=150'} alt={doc.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="cursor-pointer" onClick={() => navigate(`/consult/${doc.id}`)}>
@@ -108,7 +109,7 @@ const ConsultMarketplace: React.FC = () => {
                       if (id) navigate(`/chat/${id}`);
                     } catch (err) {
                       console.error('Gagal membuat konsultasi:', err);
-                      alert('Gagal memulai konsultasi. Pastikan Anda sudah login.');
+                      toast.error('Gagal memulai konsultasi. Pastikan Anda sudah login.');
                     }
                   }}
                   className="px-4 py-2 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-xs transition"

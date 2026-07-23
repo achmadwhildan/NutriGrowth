@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { RefreshCw, Plus, Activity, ChevronRight } from 'lucide-react';
@@ -62,11 +63,11 @@ const ChildGrowth: React.FC = () => {
 
   const handleSaveGrowth = async () => {
       if (!activeChild || !activeChild.id) {
-          alert('Tidak ada data profil anak. Silakan buat profil anak terlebih dahulu.');
+          toast.error('Tidak ada data profil anak. Silakan buat profil anak terlebih dahulu.');
           return;
       }
       if (!heightInput || !weightInput) {
-          alert('Tinggi dan berat badan wajib diisi!');
+          toast.error('Tinggi dan berat badan wajib diisi!');
           return;
       }
       try {
@@ -75,7 +76,7 @@ const ChildGrowth: React.FC = () => {
               height: parseFloat(heightInput),
               weight: parseFloat(weightInput),
           });
-          alert('Data pertumbuhan berhasil disimpan!');
+          toast.success('Data pertumbuhan berhasil disimpan!');
           setIsModalOpen(false);
           setHeightInput('');
           setWeightInput('');
@@ -83,7 +84,7 @@ const ChildGrowth: React.FC = () => {
           window.location.reload();
       } catch (error) {
           console.error('Gagal menyimpan data:', error);
-          alert('Terjadi kesalahan saat menyimpan data.');
+          toast.error('Terjadi kesalahan saat menyimpan data.');
       }
   };
 
@@ -266,7 +267,7 @@ const ChildGrowth: React.FC = () => {
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-nutri-primaryDark">Riwayat Input</h3>
             <button 
-                onClick={() => alert("Seluruh riwayat sudah ditampilkan di daftar bagian bawah ini")}
+                onClick={() => toast.error("Seluruh riwayat sudah ditampilkan di daftar bagian bawah ini")}
                 className="text-xs font-bold text-gray-400 hover:text-nutri-primary transition flex items-center"
             >
                 Lihat Semua <ChevronRight className="w-3 h-3 ml-0.5" />

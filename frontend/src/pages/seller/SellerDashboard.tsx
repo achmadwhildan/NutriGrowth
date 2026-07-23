@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { CircleDollarSign, Package, Truck, Utensils } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 const SellerDashboard: React.FC = () => {
@@ -41,9 +42,10 @@ const SellerDashboard: React.FC = () => {
     const updateStatus = async (id: string, newStatus: string) => {
         try {
             await api.put(`/shop/orders/${id}/status`, { status: newStatus });
+            toast.success('Status pesanan berhasil diperbarui');
             fetchData();
         } catch (error) {
-            alert('Gagal memperbarui status');
+            toast.error('Gagal memperbarui status');
         }
     };
 

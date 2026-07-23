@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Truck, CreditCard, CircleDollarSign, Landmark, Lock } from 'lucide-react';
@@ -14,7 +15,7 @@ const Checkout: React.FC = () => {
 
   useEffect(() => {
     if (!product) {
-      alert("Tidak ada produk yang dipilih untuk checkout");
+      toast.error("Tidak ada produk yang dipilih untuk checkout");
       navigate(-1);
     }
   }, [product, navigate]);
@@ -45,11 +46,11 @@ const Checkout: React.FC = () => {
         quantity: quantity || 1
       });
 
-      alert(response.data?.message || 'Pesanan berhasil dibuat!');
+      toast.success(response.data?.message || 'Pesanan berhasil dibuat!');
       navigate('/orders');
     } catch (err: any) {
       console.error('Checkout error:', err);
-      alert(err?.response?.data?.message || "Gagal memproses checkout.");
+      toast.error(err?.response?.data?.message || "Gagal memproses checkout.");
     }
   };
 

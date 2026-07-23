@@ -1,8 +1,10 @@
+import toast from 'react-hot-toast';
 import React, { useState, FormEvent, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { User } from '../types';
+import LoadingScreen from '../components/ui/LoadingScreen';
 
 const getDashboardPath = (role: User['role']) => {
     switch (role) {
@@ -22,6 +24,7 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [errorMsg, setErrorMsg] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
@@ -35,6 +38,7 @@ const Login: React.FC = () => {
     const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrorMsg('');
+        setIsLoading(true);
         
         try {
             // tembak endpoint auth login
@@ -43,14 +47,18 @@ const Login: React.FC = () => {
             if (response.data.token && auth) {
                 auth.login(response.data.token, response.data.user);
                 navigate(getDashboardPath(response.data.user.role));
-                alert(`Selamat datang kembali, ${response.data.user.name}!`);
+                toast.success(`Selamat datang kembali, ${response.data.user.name}!`);
             }
         } catch (err: any) {
             setErrorMsg(err.response?.data?.message || 'Gagal terhubung ke server. Periksa kembali akun anda');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
+        <>
+        {isLoading && <LoadingScreen />}
         <div className="min-h-screen flex items-center justify-center p-4 bg-nutri-tertiary/30">
             <div className="bg-white rounded-3xl shadow-xl flex flex-col md:flex-row max-w-4xl w-full overflow-hidden">
 
@@ -120,7 +128,8 @@ const Login: React.FC = () => {
 
                         <button
                             type="submit"
-                            className="w-full py-3 bg-nutri-primaryDark text-white font-semibold rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.99] transition duration-150 text-sm mt-2"
+                            className="w-full py-3 bg-nutri-primaryDark text-white font-semibold rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.99] transition duration-150 text-sm mt-2 disabled:opacity-50"
+                            disabled={isLoading}
                         >
                             Masuk Sekarang
                         </button>
@@ -145,6 +154,7 @@ const Login: React.FC = () => {
 
             </div>
         </div>
+        </>
     );
 };
 

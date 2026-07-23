@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 
@@ -38,10 +39,10 @@ const DoctorVerification: React.FC = () => {
                 action: action === 'approved' ? 'approve' : 'reject',
             });
             setPendingDoctors((docs) => docs.filter((d) => d.id !== id));
-            alert(`Dokter berhasil ${action === 'approved' ? 'diterima' : 'ditolak'}.`);
+            toast.success(`Dokter berhasil ${action === 'approved' ? 'diterima' : 'ditolak'}.`);
         } catch (err) {
             console.error('Gagal mengubah status verifier dokter:', err);
-            alert('Gagal memperbarui status verifikasi dokter. Silakan coba lagi.');
+            toast.error('Gagal memperbarui status verifikasi dokter. Silakan coba lagi.');
         }
     };
 

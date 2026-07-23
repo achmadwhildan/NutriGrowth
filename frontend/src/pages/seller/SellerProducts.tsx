@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 const SellerProducts: React.FC = () => {
@@ -37,10 +38,10 @@ const SellerProducts: React.FC = () => {
         try {
             await api.delete(`/shop/products/${id}`);
             setProducts(prev => prev.filter(p => p.id !== id));
-            alert('Produk berhasil dihapus');
+            toast.success('Produk berhasil dihapus');
         } catch (error) {
             console.error('Gagal hapus produk', error);
-            alert('Gagal menghapus produk');
+            toast.error('Gagal menghapus produk');
         }
     };
 
@@ -182,15 +183,17 @@ const SellerProducts: React.FC = () => {
                                         if (editingProductId) {
                                             const res = await api.put(`/shop/products/${editingProductId}`, payload);
                                             setProducts(prev => prev.map(p => p.id === editingProductId ? res.data.data : p));
+                                            toast.success('Produk berhasil diupdate');
                                         } else {
                                             const res = await api.post('/shop/products', payload);
                                             setProducts(prev => [res.data.data, ...prev]);
+                                            toast.success('Produk berhasil ditambahkan');
                                         }
                                         setShowModal(false);
                                         resetForm();
                                     } catch (err: any) {
                                         console.error('Gagal menyimpan produk:', err);
-                                        alert(err?.response?.data?.message || 'Gagal menyimpan produk');
+                                        toast.error(err?.response?.data?.message || 'Gagal menyimpan produk');
                                     }
                                 }}
                                 className="w-full py-3 bg-nutri-primary hover:bg-nutri-primaryDark text-white font-bold rounded-xl transition shadow-sm mt-2"

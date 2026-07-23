@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Phone, Video, Paperclip, Baby, User } from 'lucide-react';
@@ -114,7 +115,7 @@ const DoctorConsultRoom: React.FC = () => {
             }
         } catch (err) {
             console.error('Gagal mengirim pesan:', err);
-            alert('Gagal mengirim pesan.');
+            toast.error('Gagal mengirim pesan.');
         }
     };
 

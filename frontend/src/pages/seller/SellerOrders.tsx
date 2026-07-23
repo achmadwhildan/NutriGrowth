@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 const SellerOrders: React.FC = () => {
@@ -124,9 +125,10 @@ const SellerOrders: React.FC = () => {
                                             try {
                                                 await api.put(`/shop/orders/${o.id}/status`, { status: newStatus });
                                                 setOrders(prev => prev.map(p => p.id === o.id ? { ...p, status: newStatus } : p));
+                                                toast.success('Status pesanan berhasil diubah');
                                             } catch (err) {
                                                 console.error('Gagal update status:', err);
-                                                alert('Gagal mengubah status pesanan');
+                                                toast.error('Gagal mengubah status pesanan');
                                             }
                                         }}
                                     >
@@ -138,13 +140,14 @@ const SellerOrders: React.FC = () => {
                                     {o.status === 'PENDING' && (
                                         <button 
                                             onClick={async () => {
-                                                try {
-                                                    await api.put(`/shop/orders/${o.id}/status`, { status: 'PROCESSING' });
-                                                    setOrders(prev => prev.map(p => p.id === o.id ? { ...p, status: 'PROCESSING' } : p));
-                                                } catch (err) {
-                                                    console.error('Gagal update status:', err);
-                                                    alert('Gagal menerima pesanan');
-                                                }
+                                            try {
+                                                await api.put(`/shop/orders/${o.id}/status`, { status: 'PROCESSING' });
+                                                setOrders(prev => prev.map(p => p.id === o.id ? { ...p, status: 'PROCESSING' } : p));
+                                                toast.success('Pesanan berhasil diterima');
+                                            } catch (err) {
+                                                console.error('Gagal update status:', err);
+                                                toast.error('Gagal menerima pesanan');
+                                            }
                                             }}
                                             className="w-full mt-1 py-2 bg-nutri-primary hover:bg-nutri-primaryDark text-white text-[11px] font-bold rounded-xl transition shadow-sm"
                                         >

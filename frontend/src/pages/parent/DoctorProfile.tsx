@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
@@ -259,7 +260,7 @@ const DoctorProfile: React.FC = () => {
                 try {
                   const scheduledAt = getNextDateForDay(selectedDay, selectedTime);
                   if (!scheduledAt) {
-                      alert("Gagal memproses jadwal.");
+                      toast.error("Gagal memproses jadwal.");
                       return;
                   }
                   
@@ -269,7 +270,7 @@ const DoctorProfile: React.FC = () => {
                   else navigate('/chat');
                 } catch (err: any) {
                   console.error('Gagal membuat konsultasi:', err);
-                  alert(err.response?.data?.message || "Gagal membuat konsultasi. Pastikan Anda sudah login.");
+                  toast.error(err.response?.data?.message || "Gagal membuat konsultasi. Pastikan Anda sudah login.");
                 }
               }}
             className="w-full py-3.5 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-xs shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Star, ShoppingCart, HelpCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 // Helper component: fetch products and find by id, then call onLoad
@@ -38,6 +39,7 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [quantity, setQuantity] = useState<number>(1);
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 font-sans space-y-8">
@@ -135,12 +137,35 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-xs font-bold text-gray-700">Jumlah:</span>
+            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold transition"
+              >
+                -
+              </button>
+              <div className="px-4 py-1 text-sm font-bold text-gray-800 bg-white">
+                {quantity}
+              </div>
+              <button 
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold transition"
+              >
+                +
+              </button>
+            </div>
+          </div>
           <div className="flex gap-4 mt-auto">
-            <button className="flex-1 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl text-sm shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-2">
+            <button 
+              onClick={() => toast.success(`${quantity} ${product?.name} ditambahkan ke keranjang\n(Halaman keranjang sedang dalam pengembangan)`)}
+              className="flex-1 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl text-sm shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-2"
+            >
               <ShoppingCart className="w-4 h-4" /> Tambah ke Keranjang
             </button>
             <button 
-              onClick={() => navigate('/checkout', { state: { product, quantity: 1 } })}
+              onClick={() => navigate('/checkout', { state: { product, quantity } })}
               className="flex-1 py-3.5 bg-amber-800 hover:bg-opacity-95 text-white font-bold rounded-xl text-sm shadow-sm transition"
             >
               Beli Sekarang

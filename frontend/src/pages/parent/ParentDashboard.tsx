@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Scale, Plus, CheckCircle, TrendingUp, ArrowRight, ShoppingCart, UtensilsCrossed, X, ChevronDown } from 'lucide-react';
@@ -100,11 +101,11 @@ const ParentDashboard: React.FC = () => {
 
     const handleSaveGrowth = async () => {
         if (!activeChild || !activeChild.id) {
-            alert('Tidak ada data profil anak. Silakan buat profil anak terlebih dahulu.');
+            toast.error('Tidak ada data profil anak. Silakan buat profil anak terlebih dahulu.');
             return;
         }
         if (!heightInput || !weightInput) {
-            alert('Tinggi dan berat badan wajib diisi!');
+            toast.error('Tinggi dan berat badan wajib diisi!');
             return;
         }
 
@@ -114,7 +115,7 @@ const ParentDashboard: React.FC = () => {
                 height: parseFloat(heightInput),
                 weight: parseFloat(weightInput),
             });
-            alert('Data pertumbuhan berhasil disimpan!');
+            toast.success('Data pertumbuhan berhasil disimpan!');
             setIsModalOpen(false);
             setHeightInput('');
             setWeightInput('');
@@ -122,7 +123,7 @@ const ParentDashboard: React.FC = () => {
             window.location.reload();
         } catch (error) {
             console.error('Gagal menyimpan data:', error);
-            alert('Terjadi kesalahan saat menyimpan data.');
+            toast.error('Terjadi kesalahan saat menyimpan data.');
         }
     };
 
@@ -446,7 +447,7 @@ const ParentDashboard: React.FC = () => {
                                 <button 
                                     onClick={async () => {
                                         if (!childName || !childBirthDate || !childBirthWeight || !childBirthHeight) {
-                                            alert("Mohon lengkapi semua data anak.");
+                                            toast.error("Mohon lengkapi semua data anak.");
                                             return;
                                         }
                                         try {
@@ -458,7 +459,7 @@ const ParentDashboard: React.FC = () => {
                                                     birthWeight: parseFloat(childBirthWeight),
                                                     birthHeight: parseFloat(childBirthHeight)
                                                 });
-                                                alert("Profil anak berhasil diperbarui!");
+                                                toast.success("Profil anak berhasil diperbarui!");
                                             } else {
                                                 await api.post('/children/add', {
                                                     name: childName,
@@ -467,13 +468,13 @@ const ParentDashboard: React.FC = () => {
                                                     birthWeight: parseFloat(childBirthWeight),
                                                     birthHeight: parseFloat(childBirthHeight)
                                                 });
-                                                alert("Profil anak berhasil dibuat!");
+                                                toast.success("Profil anak berhasil dibuat!");
                                             }
                                             
                                             setIsAddChildModalOpen(false);
                                             window.location.reload();
                                         } catch (err) {
-                                            alert(isEditMode ? "Gagal memperbarui profil anak" : "Gagal membuat profil anak");
+                                            toast.error(isEditMode ? "Gagal memperbarui profil anak" : "Gagal membuat profil anak");
                                             console.error(err);
                                         }
                                     }}

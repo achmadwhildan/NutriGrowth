@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, ArrowRight } from 'lucide-react';
@@ -13,7 +14,7 @@ const SetupChildProfile: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate save and redirect to dashboard
-    alert('Profil anak berhasil disimpan!');
+    toast.success('Profil anak berhasil disimpan!');
     navigate('/parent-dashboard');
   };
 

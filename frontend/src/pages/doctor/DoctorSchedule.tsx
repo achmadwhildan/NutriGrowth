@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 
@@ -76,10 +77,10 @@ const DoctorSchedule: React.FC = () => {
                 newSchedule[dayIndex].times.sort();
                 setSchedule(newSchedule);
             } else {
-                alert("Waktu tersebut sudah ada di jadwal.");
+                toast.error("Waktu tersebut sudah ada di jadwal.");
             }
         } else if (timeStr) {
-            alert("Format waktu tidak valid. Gunakan format HH:MM (contoh 09:00).");
+            toast.error("Format waktu tidak valid. Gunakan format HH:MM (contoh 09:00);.");
         }
     };
 
@@ -93,10 +94,10 @@ const DoctorSchedule: React.FC = () => {
             }));
             
             await api.put('/doctor/schedule', { schedules: payload });
-            alert("Jadwal berhasil disimpan!");
+            toast.success("Jadwal berhasil disimpan!");
         } catch (error) {
             console.error("Gagal menyimpan jadwal:", error);
-            alert("Terjadi kesalahan saat menyimpan jadwal.");
+            toast.error("Terjadi kesalahan saat menyimpan jadwal.");
         } finally {
             setSaving(false);
         }

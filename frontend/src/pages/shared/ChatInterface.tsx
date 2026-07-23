@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User, ArrowLeft, Phone, Video, Paperclip, MessageCircle, Check, CheckCheck, FileText, X } from 'lucide-react';
@@ -181,7 +182,7 @@ const ChatInterface: React.FC = () => {
             }
         } catch (err) {
             console.error('Gagal mengirim pesan:', err);
-            alert('Gagal mengirim pesan. Coba lagi.');
+            toast.error('Gagal mengirim pesan. Coba lagi.');
         }
     };
 

@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 
@@ -38,10 +39,10 @@ const SellerVerification: React.FC = () => {
                 action: action === 'approved' ? 'approve' : 'reject',
             });
             setPendingSellers((sellers) => sellers.filter((s) => s.id !== id));
-            alert(`Seller berhasil ${action === 'approved' ? 'diterima' : 'ditolak'}.`);
+            toast.success(`Seller berhasil ${action === 'approved' ? 'diterima' : 'ditolak'}.`);
         } catch (err) {
             console.error('Gagal mengubah status verifikasi seller:', err);
-            alert('Gagal memperbarui status verifikasi seller. Silakan coba lagi.');
+            toast.error('Gagal memperbarui status verifikasi seller. Silakan coba lagi.');
         }
     };
 

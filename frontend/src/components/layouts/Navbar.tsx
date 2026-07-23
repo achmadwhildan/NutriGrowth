@@ -1,5 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationBell from '../NotificationBell';
 
@@ -8,6 +9,7 @@ const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const auth = useContext(AuthContext);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -33,11 +35,24 @@ const Navbar: React.FC = () => {
             : "hover:text-nutri-primary transition pb-1";
     };
 
+    const getMobileLinkClass = (path: string) => {
+        return location.pathname === path
+            ? "block px-4 py-2 bg-nutri-primary/10 text-nutri-primaryDark rounded-xl font-bold"
+            : "block px-4 py-2 text-gray-500 hover:bg-gray-50 hover:text-nutri-primary rounded-xl transition";
+    }
+
     return (
-        <header className="w-full bg-white border-b border-gray-100">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <header className="w-full bg-white border-b border-gray-100 relative z-50">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
                 <div className="text-2xl font-bold text-nutri-primaryDark flex items-center gap-2">
-                    <img src="/logo.png" alt="Logo" className="h-8 w-auto" /> NutriGrow
+                    <button 
+                        className="md:hidden p-1 mr-2 text-gray-500 hover:bg-gray-100 rounded"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                    <img src="/logo.png" alt="Logo" className="h-8 w-auto hidden sm:block" /> 
+                    <span className="hidden sm:inline">NutriGrow</span>
                 </div>
                 <nav className="hidden md:flex gap-8 text-sm font-semibold text-gray-500">
                     <Link to="/parent-dashboard" className={getLinkClass('/parent-dashboard')}>Dashboard</Link>
@@ -73,6 +88,20 @@ const Navbar: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden border-t border-gray-100 bg-white absolute w-full left-0 shadow-lg">
+                    <nav className="px-4 py-4 space-y-2 text-sm font-semibold">
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/parent-dashboard" className={getMobileLinkClass('/parent-dashboard')}>Dashboard</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/tracker" className={getMobileLinkClass('/tracker')}>Tracker</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/child-development" className={getMobileLinkClass('/child-development')}>Tumbuh Kembang</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/consult" className={getMobileLinkClass('/consult')}>Konsultasi</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/orders" className={getMobileLinkClass('/orders')}>Pesanan</Link>
+                        <Link onClick={() => setIsMobileMenuOpen(false)} to="/chat" className={getMobileLinkClass('/chat')}>Chat</Link>
+                    </nav>
+                </div>
+            )}
         </header>
     );
 };

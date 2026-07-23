@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, FormEvent, useEffect } from "react";
 import { Scale, RefreshCw, ScrollText } from 'lucide-react';
 import api from "../../services/api";
@@ -22,7 +23,7 @@ const Tracker: React.FC = () => {
 
         try {
             if (!activeChildId) {
-                alert('Pilih profil anak terlebih dahulu.');
+                toast.error('Pilih profil anak terlebih dahulu.');
                 return;
             }
 
@@ -33,10 +34,10 @@ const Tracker: React.FC = () => {
                 height: parseFloat(height)
             });
 
-            alert(`Berhasil! Status Pertumbuhan: ${response.data.data?.zScoreStatus || response.data.data?.status || 'NORMAL'} 🎉`);
+            toast.success(`Berhasil! Status Pertumbuhan: ${response.data.data?.zScoreStatus || response.data.data?.status || 'NORMAL'} 🎉`);
             fetchHistory();
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Gagal menghitung data gizi si Kecil.');
+            toast.error(error.response?.data?.message || 'Gagal menghitung data gizi si Kecil.');
         } finally {
             setLoading(false);
         }
@@ -162,9 +163,9 @@ const Tracker: React.FC = () => {
                                     {loading ? 'Menghitung...' : 'Cek Hasil'}
                                 </button>
                             </form>
-                            <div className="flex justify-center w-full">
-                                <div className="w-64 h-64 bg-nutri-primary/10 rounded-full flex items-center justify-center p-6 relative overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=300" className="w-full h-full object-cover rounded-2xl shadow-md mix-blend-multiply opacity-85" alt="Scale" />
+                            <div className="flex justify-center w-full md:w-auto flex-shrink-0">
+                                <div className="w-48 h-48 sm:w-64 sm:h-64 bg-nutri-primary/10 rounded-full flex items-center justify-center p-4 sm:p-6 relative overflow-hidden flex-shrink-0">
+                                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=300" className="w-full h-full object-cover rounded-full shadow-md mix-blend-multiply opacity-85" alt="Scale" />
                                 </div>
                             </div>
                         </div>

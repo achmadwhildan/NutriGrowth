@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { Hourglass, RefreshCw, Truck, CheckCircle2, XCircle, Check, Package, UtensilsCrossed } from 'lucide-react';
 import api from '../../services/api';
@@ -59,7 +60,7 @@ const OrderHistory: React.FC = () => {
             setTrackingData(response.data.data);
         } catch (error) {
             console.error('Gagal memuat pelacakan:', error);
-            alert('Gagal memuat data pelacakan.');
+            toast.error('Gagal memuat data pelacakan.');
             setTrackingModalOpen(false);
         } finally {
             setTrackingLoading(false);
@@ -68,7 +69,7 @@ const OrderHistory: React.FC = () => {
 
     const handleUploadPayment = async () => {
         if (!selectedOrderId || !paymentFile) {
-            alert('Pilih file bukti pembayaran terlebih dahulu!');
+            toast.error('Pilih file bukti pembayaran terlebih dahulu!');
             return;
         }
 
@@ -80,14 +81,14 @@ const OrderHistory: React.FC = () => {
             await api.post(`/shop/orders/${selectedOrderId}/payment`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert('Bukti pembayaran berhasil diunggah!');
+            toast.success('Bukti pembayaran berhasil diunggah!');
             setPaymentModalOpen(false);
             setPaymentFile(null);
             // Refresh orders
             window.location.reload();
         } catch (error: any) {
             console.error('Gagal upload bukti bayar:', error);
-            alert(error.response?.data?.message || 'Gagal mengunggah bukti pembayaran.');
+            toast.error(error.response?.data?.message || 'Gagal mengunggah bukti pembayaran.');
         } finally {
             setUploading(false);
         }
@@ -291,7 +292,7 @@ const OrderHistory: React.FC = () => {
                                                     </button>
                                                 )}
                                                 <button 
-                                                    onClick={() => alert(`Detail Pesanan #${order.id}\nProduk: ${order.productName}\nTotal: ${formatPrice(order.totalPrice)}\n\n(Halaman detail pesanan lengkap sedang dalam pengembangan)`)}
+                                                    onClick={() => toast.error(`Detail Pesanan #${order.id}\nProduk: ${order.productName}\nTotal: ${formatPrice(order.totalPrice)}\n\n(Halaman detail pesanan lengkap sedang dalam pengembangan)`)}
                                                     className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition"
                                                 >
                                                     Detail

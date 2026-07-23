@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, FormEvent, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -44,7 +45,7 @@ const Register: React.FC = () => {
             });
 
             if (response.data.needsVerification) {
-                alert(response.data.message);
+                toast.error(response.data.message);
                 navigate('/login');
             } else if (response.data.token && auth) {
                 // simpan ke state global context 
@@ -52,7 +53,7 @@ const Register: React.FC = () => {
 
                 // arahkan user masuk ke dalam dashboard utama jika sukses
                 navigate('/');
-                alert(`Pendaftaran berhasil! Selamat datang, ${response.data.user.name}!`);
+                toast.success(`Pendaftaran berhasil! Selamat datang, ${response.data.user.name}!`);
             }
         } catch (err: any) {
             setErrorMsg(err.response?.data?.message || 'Pendaftaran gagal. Periksa kembali data anda atau coba lagi nanti.');
